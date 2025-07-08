@@ -1,0 +1,176 @@
+const User = require('../models/User'); // Adjust path according to your User model location
+const jwt = require('jsonwebtoken');
+
+// Get user profile
+const getUserProfile = async (req, res) => {
+  try {
+    // req.user should be populated by your authenticateToken middleware
+    const userId = req.user.id || req.user._id;
+    
+    // Find user and exclude sensitive information like password
+    const user = await User.findById(userId).select('-password -__v');
+    
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+    
+    // Return user profile
+    res.status(200).json({
+      success: true,
+      data: user,
+      // Also return individual fields for easier frontend access
+      name: user.name || user.firstName || user.username,
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email
+    });
+    
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch user profile',
+      error: error.message 
+    });
+  }
+};
+
+// Update user profile
+const updateUserProfile = async (req, res) => {
+  try {
+    const userId = req.user.id || req.user._id;
+    const updates = req.body;
+    
+    // Remove sensitive fields that shouldn't be updated through this endpoint
+    delete updates.password;
+    delete updates._id;
+    delete updates.__v;
+    
+    // Find user and update
+    const user = await User.findByIdAndUpdate(
+      userId, 
+      updates, 
+      { new: true, runValidators: true }
+    ).select('-password -__v');
+    
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully',
+      data: user
+    });
+    
+  } catch (error) {
+    console.error('Error updating user profile:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to update user profile',
+      error: error.message 
+    });
+  }
+};
+
+// Get user statistics (for dashboard)
+const getUserStats = async (req, res) => {
+  try {
+    const userId = req.user.id || req.user._id;
+    
+    // You can add more statistics here based on your needs
+    // For example, if you have Task/Assignment models
+    const stats = {
+      totalTasks: 0,
+      completedTasks: 0,
+      pendingTasks: 0,
+      certificates: 0,
+      quizzesCompleted: 0
+    };
+    
+    // If you have a Task model, you can fetch actual statistics
+    // const Task = require('../models/Task');
+    // const totalTasks = await Task.countDocuments({ assignedTo: userId });
+    // const completedTasks = await Task.countDocuments({ assignedTo: userId, status: 'completed' });
+    // stats.totalTasks = totalTasks;
+    // stats.completedTasks = completedTasks;
+    // stats.pendingTasks = totalTasks - completedTasks;
+    
+    res.status(200).json({
+      success: true,
+      data: stats
+    });
+    
+  } catch (error) {
+    console.error('Error fetching user stats:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch user statistics',
+      error: error.message 
+    });
+  }
+};
+
+// Change password
+const changePassword = async (req, res) => {
+  try {
+    const userId = req.user.id || req.user._id;
+    const { currentPassword, newPassword } = req.body;
+    
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password and new password are required'
+      });
+    }
+    
+    // Find user with password
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    // Verify current password (assuming you have a method to compare passwords)
+    const isCurrentPasswordValid = await user.comparePassword(currentPassword);
+    if (!isCurrentPasswordValid) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password is incorrect'
+      });
+    }
+    
+    // Update password (assuming you have password hashing in your User model)
+    user.password = newPassword;
+    await user.save();
+    
+    res.status(200).json({
+      success: true,
+      message: 'Password changed successfully'
+    });
+    
+  } catch (error) {
+    console.error('Error changing password:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to change password',
+      error: error.message
+    });
+  }
+};
+
+module.exports = {
+  getUserProfile,
+  updateUserProfile,
+  getUserStats,
+  changePassword
+};

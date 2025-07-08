@@ -1,0 +1,186 @@
+/* Replace your existing .employee-grid class with this */
+.employee-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Always 3 columns */
+  gap: 24px;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Responsive breakpoints - maintains 3 per row on desktop */
+@media (max-width: 768px) {
+  .employee-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 columns on tablet */
+  }
+}
+
+@media (max-width: 480px) {
+  .employee-grid {
+    grid-template-columns: 1fr; /* 1 column on mobile */
+  }
+}
+
+/* Enhanced cards to ensure equal height in each row */
+.employee-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  padding: 24px;
+  transition: all 0.3s ease;
+  transform: translateY(0);
+  opacity: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Ensures all cards have same height in each row */
+}
+
+/* Make card content distribute evenly */
+.employee-card .employee-details {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Grid Layout - 3 cards per row */
+.employee-directory-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 768px) {
+  .employee-directory-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .employee-directory-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Employee Card Styling */
+.employee-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  padding: 24px;
+  transition: all 0.3s ease;
+  transform: translateY(0);
+  opacity: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Equal height cards */
+}
+
+.employee-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+/* Card Header */
+.employee-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.employee-avatar {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.employee-card:hover .employee-avatar {
+  transform: scale(1.1);
+}
+
+.employee-name {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0 0 4px 0;
+  color: #1f2937;
+}
+
+.employee-department-badge {
+  font-size: 12px;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 2px 8px;
+  border-radius: 12px;
+  display: inline-block;
+}
+
+/* Employee Info List */
+.employee-info-list {
+  flex-grow: 1;
+  margin-bottom: 16px;
+}
+
+.employee-info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: #4b5563;
+}
+
+.employee-info-icon {
+  width: 16px;
+  height: 16px;
+  color: #6b7280;
+}
+
+/* Card Footer */
+.employee-card-footer {
+  border-top: 1px solid #e5e7eb;
+  margin-top: auto;
+  padding-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.employee-footer-label {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.employee-footer-value {
+  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 11px;
+  color: #374151;
+  font-family: 'Courier New', monospace;
+}
+.button2
+{
+  background-color:  #7c3aed;
+  width: 200px;
+  height: 30px;
+}
+/* Animation */
+@keyframes fadeInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
