@@ -1,3 +1,4 @@
+// backend/models/AssignedTask.js
 const mongoose = require('mongoose');
 
 const assignedTaskSchema = new mongoose.Schema({
@@ -43,10 +44,26 @@ const assignedTaskSchema = new mongoose.Schema({
   reminderSentAt: { type: Date },
   totalAssignees: { type: Number, default: 0 },
   completedCount: { type: Number, default: 0 },
-  averageCompletionTime: { type: Number }
+  averageCompletionTime: { type: Number },
+  videos: [{
+    _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
+    title: { type: String, default: 'Untitled Video' },
+    url: { type: String, required: true },
+    thumbnail: { type: String, default: '/api/placeholder/300/180' },
+    duration: { type: String, default: 'Unknown duration' }
+  }],
+  quizzes: [{
+    _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
+    title: { type: String, default: 'Untitled Quiz' },
+    questions: [{
+      question: { type: String, required: true },
+      options: [{ type: String, required: true }],
+      correctAnswer: { type: String, required: true }
+    }],
+    passingScore: { type: Number, default: 70 }
+  }]
 });
 
-// Pre-save middleware to calculate totals
 assignedTaskSchema.pre('save', function(next) {
   this.totalAssignees = this.assignees.length;
   this.completedCount = this.assignees.filter(assignee => assignee.status === 'completed').length;
@@ -54,6 +71,4 @@ assignedTaskSchema.pre('save', function(next) {
   next();
 });
 
-const AssignedTask = mongoose.model('AssignedTask', assignedTaskSchema);
-
-module.exports = AssignedTask; 
+module.exports = mongoose.model('AssignedTask', assignedTaskSchema);

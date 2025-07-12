@@ -1,10 +1,10 @@
+// backend/controllers/Admin.js
 const Admin = require('../models/Admin');
 const Employee = require('../models/Employee');
 const AssignedTask = require('../models/AssignedTask');
 const Course = require('../models/Course');
 const mongoose = require('mongoose');
 
-// EMPLOYEES
 const getEmployees = async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
@@ -39,7 +39,6 @@ const getEmployeesForAssignment = async (req, res) => {
   }
 };
 
-// TOKEN
 const verifyToken = async (req, res) => {
   try {
     let user;
@@ -67,7 +66,6 @@ const verifyToken = async (req, res) => {
   }
 };
 
-// ASSIGNED TASKS
 const createAssignedTask = async (req, res) => {
   try {
     console.log('=== BACKEND DEBUG: createAssignedTask ===');
@@ -89,17 +87,8 @@ const createAssignedTask = async (req, res) => {
       });
     }
 
-    const { taskTitle, description, module, priority, deadline, estimatedHours, reminderDays, assignees } = req.body;
+    const { taskTitle, description, module, priority, deadline, estimatedHours, reminderDays, assignees, videos, quizzes } = req.body;
 
-    // Debug: Log extracted fields
-    console.log('Extracted fields:');
-    console.log('- taskTitle:', taskTitle);
-    console.log('- description:', description);
-    console.log('- module:', module);
-    console.log('- deadline:', deadline);
-    console.log('- assignees:', assignees);
-
-    // Check for missing required fields
     const missingFields = [];
     if (!taskTitle) missingFields.push('taskTitle');
     if (!description) missingFields.push('description');  
@@ -109,19 +98,15 @@ const createAssignedTask = async (req, res) => {
       missingFields.push('assignees');
     }
 
-    console.log('Missing fields:', missingFields);
-
     if (missingFields.length > 0) {
       return res.status(400).json({ 
         error: 'Missing required fields', 
         missingFields, 
         details: `Please provide: ${missingFields.join(', ')}`,
-        receivedFields: Object.keys(req.body),
-        receivedAssignees: assignees
+        receivedFields: Object.keys(req.body)
       });
     }
 
-    // Validate deadline format
     const deadlineDate = new Date(deadline);
     if (isNaN(deadlineDate.getTime())) {
       return res.status(400).json({ 
@@ -131,42 +116,27 @@ const createAssignedTask = async (req, res) => {
       });
     }
 
-    // Process assignees
-    console.log('Processing assignees:', assignees);
     let employeeQuery = {};
     if (Array.isArray(assignees)) {
       const objectIds = [];
       const searchCriteria = [];
 
       assignees.forEach((assignee, index) => {
-        console.log(`Processing assignee ${index}:`, assignee);
         if (typeof assignee === 'string') {
           if (mongoose.Types.ObjectId.isValid(assignee) && assignee.length === 24) {
             objectIds.push(assignee);
-            console.log(`- Assignee ${index}: String ID, Valid ObjectId`);
-          } else {
-            console.log(`- Assignee ${index}: Invalid ObjectId string`);
           }
         } else if (typeof assignee === 'object' && assignee !== null) {
           const id = assignee.id || assignee._id || assignee.employeeId || assignee.value;
           if (id && mongoose.Types.ObjectId.isValid(id) && id.toString().length === 24) {
             objectIds.push(id);
-            console.log(`- Assignee ${index}: Object ID, Valid ObjectId`);
-          } else {
-            console.log(`- Assignee ${index}: No valid ID, checking name/email`);
-            if (assignee.name && assignee.email) {
-              searchCriteria.push({ name: assignee.name, email: assignee.email });
-            } else if (assignee.email) {
-              searchCriteria.push({ email: assignee.email });
-            }
+          } else if (assignee.name && assignee.email) {
+            searchCriteria.push({ name: assignee.name, email: assignee.email });
+          } else if (assignee.email) {
+            searchCriteria.push({ email: assignee.email });
           }
-        } else {
-          console.log(`- Assignee ${index}: Invalid type (${typeof assignee})`);
         }
       });
-
-      console.log('ObjectIds found:', objectIds);
-      console.log('Search criteria:', searchCriteria);
 
       const queryConditions = [];
       if (objectIds.length > 0) {
@@ -187,12 +157,7 @@ const createAssignedTask = async (req, res) => {
       employeeQuery = queryConditions.length === 1 ? queryConditions[0] : { $or: queryConditions };
     }
 
-    console.log('Final employee query:', JSON.stringify(employeeQuery, null, 2));
-
-    // Find employees
     const employees = await Employee.find(employeeQuery);
-    console.log('Found employees:', employees.length, employees.map(e => ({ id: e._id, name: e.name, email: e.email })));
-
     if (employees.length === 0) {
       return res.status(400).json({ 
         error: 'No employees found', 
@@ -202,7 +167,6 @@ const createAssignedTask = async (req, res) => {
       });
     }
 
-    // Create task assignees
     const taskAssignees = employees.map(employee => ({
       employeeId: employee._id,
       employeeName: employee.name,
@@ -212,9 +176,6 @@ const createAssignedTask = async (req, res) => {
       progress: 0
     }));
 
-    console.log('Task assignees created:', taskAssignees);
-
-    // Create the assigned task
     const assignedTask = new AssignedTask({
       taskTitle,
       description,
@@ -229,24 +190,16 @@ const createAssignedTask = async (req, res) => {
         adminEmail: admin.email
       },
       assignees: taskAssignees,
-      status: 'active'
+      status: 'active',
+      videos: videos || [],
+      quizzes: quizzes || []
     });
 
-    console.log('Saving assigned task...');
     const savedTask = await assignedTask.save();
-    console.log('Task saved successfully:', savedTask._id);
-
     res.status(201).json({ 
       success: true, 
       message: 'Task assigned successfully', 
-      task: { 
-        id: savedTask._id, 
-        title: savedTask.taskTitle, 
-        assignedTo: taskAssignees.length, 
-        assignedBy: admin.name, 
-        deadline: savedTask.deadline, 
-        priority: savedTask.priority 
-      } 
+      task: savedTask 
     });
   } catch (err) {
     console.error('Error in createAssignedTask:', err);
@@ -311,7 +264,7 @@ const getAssignedTaskById = async (req, res) => {
         return res.status(403).json({ error: 'Access denied' });
       }
     }
-    res.json(task);
+    res.json({ task });
   } catch (err) {
     console.error('Error fetching assigned task:', err);
     res.status(500).json({ error: 'Failed to fetch assigned task', message: err.message });
@@ -410,7 +363,6 @@ const getAssignedTasksStats = async (req, res) => {
   }
 };
 
-// COURSES
 const createCourse = async (req, res) => {
   try {
     if (!req.body.name || !req.body.description) {
@@ -526,15 +478,19 @@ const deleteCourse = async (req, res) => {
   }
 };
 
-// ASSIGNED COURSES
 const getAssignedCourses = async (req, res) => {
   try {
-    const assignedTasks = await AssignedTask.find({ 'assignees.employeeId': req.user.id, status: { $in: ['active', 'in-progress'] } })
+    const assignedTasks = await AssignedTask.find({ 
+      'assignees.employeeId': req.user.id, 
+      status: { $in: ['active', 'in-progress'] }
+    })
+      .populate('assignees.employeeId', 'name email department')
       .populate('assignedBy.adminId', 'name email')
       .sort({ createdAt: -1 });
+
     const assignedCourses = assignedTasks.map(task => {
       const userAssignment = task.assignees.find(
-        assignee => assignee.employeeId.toString() === req.user.id
+        assignee => assignee.employeeId._id.toString() === req.user.id
       );
       return {
         _id: task._id,
@@ -548,13 +504,23 @@ const getAssignedCourses = async (req, res) => {
         assignedBy: task.assignedBy.adminName,
         assignedDate: task.createdAt,
         estimatedHours: task.estimatedHours,
-        type: 'task'
+        type: 'task',
+        videos: task.videos || [],
+        quizzes: task.quizzes || []
       };
     });
-    res.json({ success: true, courses: assignedCourses, count: assignedCourses.length });
+
+    res.json({ 
+      success: true, 
+      courses: assignedCourses, 
+      count: assignedCourses.length 
+    });
   } catch (err) {
     console.error('Error fetching assigned courses:', err);
-    res.status(500).json({ error: 'Failed to fetch assigned courses', message: err.message });
+    res.status(500).json({ 
+      error: 'Failed to fetch assigned courses', 
+      message: err.message 
+    });
   }
 };
 
@@ -570,13 +536,12 @@ const getAvailableCourses = async (req, res) => {
   }
 };
 
-// ASSIGNEDTASKS (by email)
 const assignTaskByEmail = async (req, res) => {
   try {
     if (!req.user || req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Admin access required', details: 'Only administrators can assign tasks' });
     }
-    const { employeeEmail, taskTitle, description, module, priority, deadline, estimatedHours, reminderDays } = req.body;
+    const { employeeEmail, taskTitle, description, module, priority, deadline, estimatedHours, reminderDays, videos, quizzes } = req.body;
     const missingFields = [];
     if (!employeeEmail) missingFields.push('employeeEmail');
     if (!taskTitle) missingFields.push('taskTitle');
@@ -628,20 +593,15 @@ const assignTaskByEmail = async (req, res) => {
         status: 'assigned',
         progress: 0
       }],
-      status: 'active'
+      status: 'active',
+      videos: videos || [],
+      quizzes: quizzes || []
     });
     const savedTask = await assignedTask.save();
     res.status(201).json({ 
       success: true, 
       message: 'Task assigned successfully', 
-      task: { 
-        id: savedTask._id, 
-        title: savedTask.taskTitle, 
-        assignedTo: employee.name, 
-        assignedBy: admin.name, 
-        deadline: savedTask.deadline, 
-        priority: savedTask.priority 
-      } 
+      task: savedTask 
     });
   } catch (err) {
     console.error('Error assigning task by email:', err);
@@ -660,6 +620,7 @@ const getAssignedTasksForUser = async (req, res) => {
     }
     const assignedTasks = await AssignedTask.find({ 'assignees.employeeId': userId, status: { $in: ['active', 'in-progress'] } })
       .populate('assignedBy.adminId', 'name email')
+      .populate('assignees.employeeId', 'name email department')
       .sort({ createdAt: -1 });
     res.json({ success: true, tasks: assignedTasks, count: assignedTasks.length });
   } catch (err) {
@@ -687,7 +648,7 @@ const startAssignedTask = async (req, res) => {
     task.assignees[assigneeIndex].status = 'in-progress';
     task.assignees[assigneeIndex].startedAt = new Date();
     await task.save();
-    res.json({ success: true, message: 'Task started successfully' });
+    res.json({ success: true, message: 'Task started successfully', task });
   } catch (err) {
     console.error('Error starting task:', err);
     res.status(500).json({ error: 'Failed to start task', message: err.message });
