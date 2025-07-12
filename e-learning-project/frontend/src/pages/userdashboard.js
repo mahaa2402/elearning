@@ -13,6 +13,7 @@ import {
   Clock,
   AlertCircle
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const UserDashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,6 +24,21 @@ const UserDashboard = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [adminName, setAdminName] = useState(''); // New state for admin name
   const [adminLoading, setAdminLoading] = useState(true); // Loading state for admin profile
+  const navigate = useNavigate();
+
+  // Helper to safely extract admin name as string for filtering and rendering
+  const getAdminNameString = (assignedBy) => {
+    if (!assignedBy) return '';
+    if (typeof assignedBy.name === 'string') return assignedBy.name;
+    if (typeof assignedBy.name === 'object' && assignedBy.name !== null) {
+      if (typeof assignedBy.name.adminName === 'string') return assignedBy.name.adminName;
+      if (typeof assignedBy.name.adminEmail === 'string') return assignedBy.name.adminEmail;
+    }
+    if (typeof assignedBy.adminName === 'string') return assignedBy.adminName;
+    if (typeof assignedBy.adminEmail === 'string') return assignedBy.adminEmail;
+    if (typeof assignedBy.email === 'string') return assignedBy.email.split('@')[0];
+    return '';
+  };
 
   // Filter tasks based on search query
   useEffect(() => {
@@ -32,7 +48,7 @@ const UserDashboard = () => {
       const filtered = assignedTasks.filter(task => 
         task.taskTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
         task.module.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (task.assignedBy?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
+        getAdminNameString(task.assignedBy).toLowerCase().includes(searchQuery.toLowerCase())
       );
       setFilteredTasks(filtered);
     }
@@ -489,19 +505,19 @@ const fetchAdminProfile = async () => {
                                   <User className="instructor-avatar-icon" />
                                 </div>
                                 <div className="instructor-info">
-                                  <div className="instructor-name">{
-                                    task.assignedBy?.name
-                                      ? task.assignedBy.name
-                                      : (task.assignedBy?.email
-                                          ? task.assignedBy.email.split('@')[0]
-                                          : 'Admin')
-                                  }</div>
-                                  {/* Display admin name from assignedBy */}
-                                  {task.assignedBy?.adminName && (
-                                    <div className="admin-name-assignedby">
-                                      Assigned by: {task.assignedBy.adminName}
-                                    </div>
-                                  )}
+                                  <div className="instructor-name">{getAdminNameString(task.assignedBy) || 'Admin'}</div>
+                                  {/* Display admin name from assignedBy, only if it's a string */}
+{(() => {
+  const adminNameStr = getAdminNameString(task.assignedBy);
+  if (adminNameStr && typeof adminNameStr === 'string') {
+    return (
+      <div className="admin-name-assignedby">
+        Assigned by: {adminNameStr}
+      </div>
+    );
+  }
+  return null;
+})()}
                                   <div className="assigned-date">
                                     <Calendar className="date-icon" />
                                     {new Date(task.createdAt).toLocaleDateString()}
@@ -546,6 +562,11 @@ const fetchAdminProfile = async () => {
                               <button 
                                 className={`btn ${task.status === 'completed' ? 'btn-completed' : 'btn-start-learning'}`}
                                 disabled={task.status === 'completed'}
+                                onClick={() => {
+                                  if (task.status !== 'completed') {
+                                    navigate('/taskdetailpage', { state: { task } });
+                                  }
+                                }}
                               >
                                 {task.status === 'completed' ? 'Completed' :
                                  task.status === 'in-progress' ? 'Continue' :

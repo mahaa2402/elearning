@@ -131,7 +131,7 @@ function LandingPage() {
         </div>
         <nav>
           <Link to="/userdashboard">Home</Link>
-          {isLoggedIn && <Link to="/user/courses">Courses</Link>}
+          {isLoggedIn && <Link to="/coursemodules">Courses</Link>}
           {isLoggedIn && <Link to="/customize">Customize Course</Link>}
           <a href="#aboutus">About</a>
         </nav>
@@ -333,7 +333,7 @@ function LandingPage() {
                 <h4 className="footer-title">Quick Links</h4>
                 <ul className="footer-links">
                   <li><Link to="/">Home</Link></li>
-                  {isLoggedIn && <li><Link to="/user/courses">Courses</Link></li>}
+                  {isLoggedIn && <li><Link to="/coursemodules">Courses</Link></li>}
                   {isLoggedIn && <li><Link to="/customize">Customize Course</Link></li>}
                   {isLoggedIn && <li><Link to="/user/certificates">Certificates</Link></li>}
                   <li><Link to="/admindashboard">About Us</Link></li>
