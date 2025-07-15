@@ -1,5 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './quiz.css';
+
+const email = localStorage.getItem("employeeEmail"); // stored at login
+const currentLevel = parseInt(localStorage.getItem("levelCleared")) || 0;
+const thisLesson = 4; // Set this based on current lesson
+
+// Update level in localStorage and backend if eligible
+if (thisLesson === currentLevel + 1) {
+  const updatedLevel = thisLesson;
+  localStorage.setItem("levelCleared", updatedLevel);
+
+  fetch("http://localhost:5000/api/update-progress", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, levelCount: updatedLevel }),
+  });
+}
 
 const questionSets = [
   [
@@ -227,14 +243,48 @@ const Quiz = () => {
       setCurrentQuestion(prev => prev - 1);
     }
   };
+const handleSubmit = async () => {
+  setShowResults(true);
+  const score = calculateScore();
+  const passed = score / questions.length >= 0.5;
 
-  const handleSubmit = () => {
-    setShowResults(true);
-    // Mark quiz 1 as passed if score >= 50%
-    if (calculateScore() / questions.length >= 0.5) {
-      localStorage.setItem('quiz1Passed', 'true');
+  // Get auth token
+  const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+  
+  try {
+    // Submit quiz progress to new endpoint
+    const response = await fetch("http://localhost:5000/api/progress/submit-quiz", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        quizId: 1,
+        quizName: "ISP Basics Quiz",
+        score: score,
+        totalQuestions: questions.length,
+        passed: passed
+      }),
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      console.log('Quiz progress saved:', result);
+      
+      // Update local storage for backward compatibility
+      if (passed) {
+        let currentLevel = parseInt(localStorage.getItem("levelCleared")) || 0;
+        const updatedLevel = currentLevel + 1;
+        localStorage.setItem("levelCleared", updatedLevel);
+      }
+    } else {
+      console.error('Failed to save quiz progress');
     }
-  };
+  } catch (error) {
+    console.error('Error saving quiz progress:', error);
+  }
+};
 
   const calculateScore = () => {
     let correct = 0;
@@ -257,21 +307,23 @@ const Quiz = () => {
   if (showResults) {
     const score = calculateScore();
     const percentage = (score / questions.length) * 100;
-    const isPassed = percentage >= 50; // 50% or more is pass
-    
+    const isPassed = percentage >= 50;
+
     return (
       <div className="results-container">
         <div className="results-card">
           <h1 className="results-title">Quiz Results</h1>
-          
           <div className="score-display">
             <div className="score-number">{score}/{questions.length}</div>
             <div className="score-percentage">Score: {percentage.toFixed(1)}%</div>
             <div className="score-message">
-              {percentage >= 80 ? "Excellent! You have a great understanding of ISPs!" :
-               percentage >= 60 ? "Good job! You have a solid foundation about ISPs." :
-               percentage >= 40 ? "Not bad! Consider reviewing ISP concepts." :
-               "Keep learning! ISPs are an important topic to understand."}
+              {percentage >= 80
+                ? "Excellent! You have a great understanding of ISPs!"
+                : percentage >= 60
+                ? "Good job! You have a solid foundation about ISPs."
+                : percentage >= 40
+                ? "Not bad! Consider reviewing ISP concepts."
+                : "Keep learning! ISPs are an important topic to understand."}
             </div>
           </div>
 
@@ -283,13 +335,13 @@ const Quiz = () => {
                 </div>
                 <div className="question-review-content">
                   <div className="question-review-answer">
-                    Your answer: {selectedAnswers[question.id] ? 
-                      question.options.find(opt => opt.id === selectedAnswers[question.id])?.text : 
-                      "Not answered"}
+                    Your answer: {selectedAnswers[question.id]
+                      ? question.options.find(opt => opt.id === selectedAnswers[question.id])?.text
+                      : "Not answered"}
                   </div>
                   <div className={`answer-status ${
-                    selectedAnswers[question.id] === question.correctAnswer 
-                      ? 'correct' 
+                    selectedAnswers[question.id] === question.correctAnswer
+                      ? 'correct'
                       : 'incorrect'
                   }`}>
                     {selectedAnswers[question.id] === question.correctAnswer ? '✓' : '✗'}
@@ -300,17 +352,9 @@ const Quiz = () => {
           </div>
 
           {!isPassed ? (
-            <button
-              onClick={resetQuiz}
-              className="retake-button"
-            >
-              Retake Quiz
-            </button>
+            <button onClick={resetQuiz} className="retake-button">Retake Quiz</button>
           ) : (
-            <button
-              onClick={() => window.location.href = '/lesson2'}
-              className="next-course-button"
-            >
+            <button onClick={() => window.location.href = '/lesson2'} className="next-course-button">
               Start Next Course
             </button>
           )}
@@ -326,12 +370,8 @@ const Quiz = () => {
     <div className="quiz-container">
       <div className="quiz-card">
         <div className="quiz-header">
-          <h2 className="question-number">
-            QUESTION {currentQuestion + 1}
-          </h2>
-          <h1 className="question-text">
-            {currentQuestionData.question}
-          </h1>
+          <h2 className="question-number">QUESTION {currentQuestion + 1}</h2>
+          <h1 className="question-text">{currentQuestionData.question}</h1>
         </div>
 
         <div className="options-container">
@@ -373,19 +413,9 @@ const Quiz = () => {
           </div>
 
           {isLastQuestion ? (
-            <button
-              onClick={handleSubmit}
-              className="nav-button submit"
-            >
-              SUBMIT
-            </button>
+            <button onClick={handleSubmit} className="nav-button submit">SUBMIT</button>
           ) : (
-            <button
-              onClick={handleNext}
-              className="nav-button primary"
-            >
-              Next
-            </button>
+            <button onClick={handleNext} className="nav-button primary">Next</button>
           )}
         </div>
       </div>

@@ -1,4 +1,3 @@
-// src/pages/auth/Login.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -8,7 +7,7 @@ const Login = () => {
   const [formData, setFormData] = useState({ 
     email: '', 
     password: '', 
-    role: 'admin' // Default to admin
+    role: 'admin' 
   });
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -19,21 +18,6 @@ const Login = () => {
       [e.target.name]: e.target.value
     }));
   };
-  // Example login handler (in your login component)
-const handleLogin = async (email, password, role) => {
-  const response = await fetch('http://localhost:5000/api/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password, role })
-  });
-  const data = await response.json();
-  if (data.success) {
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('email', data.user.email);
-    localStorage.setItem('userId', data.user.id); // Store userId if needed
-    window.location.href = '/dashboard'; // Redirect to dashboard
-  }
-};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,35 +27,42 @@ const handleLogin = async (email, password, role) => {
       const res = await axios.post('http://localhost:5000/api/auth/login', formData);
       
       const token = res.data.token;
-      if (token) {
+      const userData = res.data.user;
+
+      if (token && userData) {
         localStorage.setItem('authToken', token);
         localStorage.setItem('token', token);
-      }
-
-      const userData = res.data.user;
-      if (userData) {
         localStorage.setItem('userSession', JSON.stringify(userData));
         localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('employeeEmail', userData.email); // store email
+
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        window.dispatchEvent(new Event('loginSuccess'));
+
+        alert(res.data.message || 'Login successful!');
+
+        // ✅ ✅ ✅ Move fetch here — AFTER email is stored
+        fetch(`http://localhost:5000/api/progress/${userData.email}`)
+          .then(res => {
+            if (!res.ok) throw new Error("Failed to fetch progress");
+            return res.json();
+          })
+          .then(data => {
+            // Use new progress structure if available, fallback to old structure
+            const levelCount = data.data?.currentLevel || data.levelCount || 0;
+            localStorage.setItem("levelCleared", levelCount);
+          })
+          .catch(err => {
+            console.error("Error fetching progress:", err);
+          });
+
+        const userRole = userData.role || res.data.role;
+        setTimeout(() => {
+          navigate(userRole === 'admin' ? '/admindashboard' : '/');
+        }, 100);
       }
 
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
-      window.dispatchEvent(new Event('loginSuccess'));
-
-      alert(res.data.message || 'Login successful!');
-
-      const userRole = userData.role || res.data.role;
-      
-      setTimeout(() => {
-        if (userRole === 'admin') {
-          navigate('/admindashboard');
-        } else {
-          navigate('/');
-        }
-      }, 100);
-
     } catch (err) {
-      // Enhanced error logging
       console.error('Login error:', {
         status: err.response?.status,
         error: err.response?.data?.error,

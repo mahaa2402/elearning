@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "./contentpage.css";
+import "./lesson1page.css";
 import hsiImg from "../assets/hsi.jpg";
 import { User, ArrowRight, ArrowLeft } from "lucide-react";
 
@@ -108,23 +108,68 @@ const Lesson04SensitiveInfo = () => {
           <div className="section">
             <h3>Courses</h3>
             <ul className="lesson-list">
-              <li>
-                <Link to="/contentpage">
-                  <span>Lesson 01: Introduction to DataProtection</span>
-                  <span className="duration">30 min</span>
+              <li style={{
+                backgroundColor: '#f0f9f0',
+                borderLeft: '4px solid #22c55e',
+                borderRadius: '4px',
+                padding: '8px 12px',
+                marginBottom: '8px',
+                position: 'relative'
+              }}>
+                <Link to="/contentpage" style={{ color: '#16a34a', textDecoration: 'none' }}>
+                  <span style={{ marginLeft: '20px' }}>Lesson 01: Introduction to DataProtection</span>
+                  <span className="duration" style={{ color: '#16a34a' }}>30 min</span>
                 </Link>
+                <span style={{
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#22c55e',
+                  fontWeight: 'bold'
+                }}>✓</span>
               </li>
-              <li>
-                <Link to="/lesson2">
-                  <span>Lesson 02: What is ISP ?</span>
-                  <span className="duration">30 mins</span>
+              <li style={{
+                backgroundColor: '#f0f9f0',
+                borderLeft: '4px solid #22c55e',
+                borderRadius: '4px',
+                padding: '8px 12px',
+                marginBottom: '8px',
+                position: 'relative'
+              }}>
+                <Link to="/lesson2" style={{ color: '#16a34a', textDecoration: 'none' }}>
+                  <span style={{ marginLeft: '20px' }}>Lesson 02: What is ISP ?</span>
+                  <span className="duration" style={{ color: '#16a34a' }}>30 mins</span>
                 </Link>
+                <span style={{
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#22c55e',
+                  fontWeight: 'bold'
+                }}>✓</span>
               </li>
-              <li>
-                <Link to="/lesson3">
-                  <span>Lesson 03: Basics of GDPR</span>
-                  <span className="duration">30 mins</span>
+              <li style={{
+                backgroundColor: '#f0f9f0',
+                borderLeft: '4px solid #22c55e',
+                borderRadius: '4px',
+                padding: '8px 12px',
+                marginBottom: '8px',
+                position: 'relative'
+              }}>
+                <Link to="/lesson3" style={{ color: '#16a34a', textDecoration: 'none' }}>
+                  <span style={{ marginLeft: '20px' }}>Lesson 03: Basics of GDPR</span>
+                  <span className="duration" style={{ color: '#16a34a' }}>30 mins</span>
                 </Link>
+                <span style={{
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#22c55e',
+                  fontWeight: 'bold'
+                }}>✓</span>
               </li>
               <li className="active">
                 <Link to="/lesson4">
@@ -138,30 +183,75 @@ const Lesson04SensitiveInfo = () => {
           <div className="section">
             <h3>PRACTICE QUIZ</h3>
             <ul className="lesson-list">
-              <li>
-                <Link to="/quiz">
-                  <span>Lesson 01: Introduction to Data Protection</span>
+              <li style={{
+                backgroundColor: '#f0f9f0',
+                borderLeft: '4px solid #22c55e',
+                borderRadius: '4px',
+                padding: '8px 12px',
+                marginBottom: '8px',
+                position: 'relative'
+              }}>
+                <Link to="/quiz" style={{ color: '#16a34a', textDecoration: 'none' }}>
+                  <span style={{ marginLeft: '20px' }}>Lesson 01: Introduction to Data Protection</span>
                 </Link>
+                <span style={{
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#22c55e',
+                  fontWeight: 'bold'
+                }}>✓</span>
               </li>
-              <li>
+              <li style={{
+                backgroundColor: '#f0f9f0',
+                borderLeft: '4px solid #22c55e',
+                borderRadius: '4px',
+                padding: '8px 12px',
+                marginBottom: '8px',
+                position: 'relative'
+              }}>
                 {/* Quiz 2 link is disabled until quiz 1 is passed */}
                 {localStorage.getItem('quiz1Passed') === 'true' ? (
-                  <Link to="/quiz2">
-                    <span>Lesson 02: What is ISP ?</span>
+                  <Link to="/quiz2" style={{ color: '#16a34a', textDecoration: 'none' }}>
+                    <span style={{ marginLeft: '20px' }}>Lesson 02: What is ISP ?</span>
                   </Link>
                 ) : (
-                  <span className="disabled-quiz" title="Complete and pass Quiz 1 first">Lesson 02: What is ISP ? (Locked)</span>
+                  <span className="disabled-quiz" title="Complete and pass Quiz 1 first" style={{ marginLeft: '20px' }}>Lesson 02: What is ISP ? (Locked)</span>
                 )}
+                <span style={{
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#22c55e',
+                  fontWeight: 'bold'
+                }}>✓</span>
               </li>
-              <li>
+              <li style={{
+                backgroundColor: '#f0f9f0',
+                borderLeft: '4px solid #22c55e',
+                borderRadius: '4px',
+                padding: '8px 12px',
+                marginBottom: '8px',
+                position: 'relative'
+              }}>
                 {/* Quiz 3 link is disabled until quiz 1 is passed */}
                 {localStorage.getItem('quiz1Passed') === 'true' ? (
-                  <Link to="/quiz3">
-                    <span>Lesson 03: Basics of GDPR</span>
+                  <Link to="/quiz3" style={{ color: '#16a34a', textDecoration: 'none' }}>
+                    <span style={{ marginLeft: '20px' }}>Lesson 03: Basics of GDPR</span>
                   </Link>
                 ) : (
-                  <span className="disabled-quiz" title="Complete and pass Quiz 1 first">Lesson 03: Basics of GDPR (Locked)</span>
+                  <span className="disabled-quiz" title="Complete and pass Quiz 1 first" style={{ marginLeft: '20px' }}>Lesson 03: Basics of GDPR (Locked)</span>
                 )}
+                <span style={{
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#22c55e',
+                  fontWeight: 'bold'
+                }}>✓</span>
               </li>
               <li>
                 {/* Quiz 4 link is disabled until quiz 1 is passed */}

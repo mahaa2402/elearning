@@ -60,10 +60,13 @@ const CourseDetailPage = () => {
 
  const navigate = useNavigate();
 
-const handleStartLesson = (sectionId) => {
-  console.log(`Starting lesson for section ${sectionId}`);
-  navigate("/contentpage"); // Navigate to course page
+const handleStartLesson = () => {
+  const levelCleared = parseInt(localStorage.getItem("levelCleared")) || 0;
+  const nextLessonId = levelCleared + 1;
+  console.log(`Navigating to Lesson ${nextLessonId}`);
+  navigate(`/lesson${nextLessonId}`); // Adjust route as needed
 };
+
 
   const toggleSection = (sectionId) => {
     setActiveSection(activeSection === sectionId ? null : sectionId);
