@@ -1,9 +1,9 @@
 // frontend/src/Lesson02ISP.js
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "./contentpage.css";
+import "./lesson1page.css";
 import video2 from "../assets/video2.mp4";
-import { User, ArrowRight, ArrowLeft } from "lucide-react";
+import { User, ArrowRight, ArrowLeft, Lock, CheckCircle } from "lucide-react";
 
 const Lesson02ISP = () => {
   const navigate = useNavigate();
@@ -72,6 +72,144 @@ const Lesson02ISP = () => {
       e.preventDefault();
       alert('Please complete and pass Quiz 1 before attempting Quiz 2.');
     }
+  };
+
+  // Helper function to get lesson styles
+  const getLessonStyles = (lessonNumber) => {
+    const isCompleted = localStorage.getItem(`lesson${lessonNumber}Viewed`) === 'true';
+    const isActive = lessonNumber === 2;
+    const isLocked = lessonNumber > 2;
+
+    const baseStyle = {
+      padding: '12px 16px',
+      borderRadius: '8px',
+      marginBottom: '8px',
+      transition: 'all 0.3s ease',
+      border: '1px solid #dee2e6'
+    };
+
+    if (isCompleted && lessonNumber < 2) {
+      return {
+        ...baseStyle,
+        backgroundColor: '#d4edda',
+        border: '1px solid #c3e6cb'
+      };
+    }
+    if (isActive) {
+      return {
+        ...baseStyle,
+        backgroundColor: '#e3f2fd',
+        border: '1px solid #2196f3'
+      };
+    }
+    if (isLocked) {
+      return {
+        ...baseStyle,
+        backgroundColor: '#f8f9fa',
+        border: '1px solid #dee2e6',
+        opacity: 0.6
+      };
+    }
+    return baseStyle;
+  };
+
+  // Helper function to get quiz styles
+  const getQuizStyles = (quizNumber) => {
+    const isPassed = quizStatus[`quiz${quizNumber}Passed`];
+    const isLocked = quizNumber > 2 || (quizNumber === 2 && !quizStatus.quiz1Passed);
+
+    const baseStyle = {
+      padding: '12px 16px',
+      borderRadius: '8px',
+      marginBottom: '8px',
+      transition: 'all 0.3s ease',
+      border: '1px solid #dee2e6'
+    };
+
+    if (isPassed && quizNumber < 2) {
+      return {
+        ...baseStyle,
+        backgroundColor: '#d4edda',
+        border: '1px solid #c3e6cb'
+      };
+    }
+    if (isLocked) {
+      return {
+        ...baseStyle,
+        backgroundColor: '#f8f9fa',
+        border: '1px solid #dee2e6',
+        opacity: 0.6
+      };
+    }
+    return baseStyle;
+  };
+
+  // Helper function to get lesson link styles
+  const getLessonLinkStyles = (lessonNumber) => {
+    const isCompleted = localStorage.getItem(`lesson${lessonNumber}Viewed`) === 'true';
+    const isActive = lessonNumber === 2;
+    const isLocked = lessonNumber > 2;
+
+    const baseStyle = {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      width: '100%',
+      textDecoration: 'none'
+    };
+
+    if (isCompleted && lessonNumber < 2) {
+      return {
+        ...baseStyle,
+        color: '#155724'
+      };
+    }
+    if (isActive) {
+      return {
+        ...baseStyle,
+        color: '#1976d2',
+        fontWeight: '600'
+      };
+    }
+    if (isLocked) {
+      return {
+        ...baseStyle,
+        color: '#6c757d',
+        cursor: 'not-allowed',
+        pointerEvents: 'none'
+      };
+    }
+    return baseStyle;
+  };
+
+  // Helper function to get quiz link styles
+  const getQuizLinkStyles = (quizNumber) => {
+    const isPassed = quizStatus[`quiz${quizNumber}Passed`];
+    const isLocked = quizNumber > 2 || (quizNumber === 2 && !quizStatus.quiz1Passed);
+
+    const baseStyle = {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      width: '100%',
+      textDecoration: 'none'
+    };
+
+    if (isPassed && quizNumber < 2) {
+      return {
+        ...baseStyle,
+        color: '#155724'
+      };
+    }
+    if (isLocked) {
+      return {
+        ...baseStyle,
+        color: '#6c757d',
+        cursor: 'not-allowed',
+        pointerEvents: 'none'
+      };
+    }
+    return baseStyle;
   };
 
   return (
@@ -163,38 +301,70 @@ const Lesson02ISP = () => {
           <div className="section">
             <h3>Courses</h3>
             <ul className="lesson-list">
-              <li className={localStorage.getItem('lesson1Viewed') === 'true' ? 'lesson-completed' : ''}>
-                <Link to="/contentpage">
-                  <span>Lesson 01: Introduction to DataProtection</span>
-                  <span className="duration">30 min</span>
+              <li style={getLessonStyles(1)}>
+                <Link to="/lesson1" style={getLessonLinkStyles(1)}>
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    {localStorage.getItem('lesson1Viewed') === 'true' && (
+                      <CheckCircle 
+                        size={16} 
+                        style={{ 
+                          color: '#28a745', 
+                          marginRight: '8px', 
+                          verticalAlign: 'middle' 
+                        }} 
+                      />
+                    )}
+                    Lesson 01: Introduction to DataProtection
+                  </span>
+                  <span style={{ fontSize: '0.9em', color: '#6c757d' }}>30 min</span>
                 </Link>
               </li>
-              <li className="active">
-                <Link to="/lesson2">
+              <li style={getLessonStyles(2)}>
+                <Link to="/lesson2" style={getLessonLinkStyles(2)}>
                   <span>Lesson 02: What is ISP ?</span>
-                  <span className="duration">30 mins</span>
+                  <span style={{ fontSize: '0.9em', color: '#6c757d' }}>30 mins</span>
                 </Link>
               </li>
-              <li>
-                <Link to="/lesson3" onClick={e => {
+              <li style={getLessonStyles(3)}>
+                <Link to="/lesson3" style={getLessonLinkStyles(3)} onClick={e => {
                   if (localStorage.getItem('lesson2Viewed') !== 'true') {
                     e.preventDefault();
                     alert('You should first complete Lesson 2 before proceeding.');
                   }
                 }}>
-                  <span>Lesson 03: Basics of GDPR</span>
-                  <span className="duration">30 mins</span>
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    <Lock 
+                      size={16} 
+                      style={{ 
+                        color: '#6c757d', 
+                        marginRight: '8px', 
+                        verticalAlign: 'middle' 
+                      }} 
+                    />
+                    Lesson 03: Basics of GDPR
+                  </span>
+                  <span style={{ fontSize: '0.9em', color: '#6c757d' }}>30 mins</span>
                 </Link>
               </li>
-              <li>
-                <Link to="/lesson4" onClick={e => {
+              <li style={getLessonStyles(4)}>
+                <Link to="/lesson4" style={getLessonLinkStyles(4)} onClick={e => {
                   if (localStorage.getItem('lesson3Viewed') !== 'true') {
                     e.preventDefault();
                     alert('You should first complete Lesson 3 before proceeding.');
                   }
                 }}>
-                  <span>Lesson 04: Handling Sensitive Information</span>
-                  <span className="duration">30 mins</span>
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    <Lock 
+                      size={16} 
+                      style={{ 
+                        color: '#6c757d', 
+                        marginRight: '8px', 
+                        verticalAlign: 'middle' 
+                      }} 
+                    />
+                    Lesson 04: Handling Sensitive Information
+                  </span>
+                  <span style={{ fontSize: '0.9em', color: '#6c757d' }}>30 mins</span>
                 </Link>
               </li>
             </ul>
@@ -203,34 +373,78 @@ const Lesson02ISP = () => {
           <div className="section">
             <h3>PRACTICE QUIZ</h3>
             <ul className="lesson-list">
-              <li className={quizStatus.quiz1Passed ? 'quiz-passed' : ''}>
-                <Link to="/quiz">
-                  <span>Lesson 01: Introduction to Data Protection</span>
+              <li style={getQuizStyles(1)}>
+                <Link to="/quiz" style={getQuizLinkStyles(1)}>
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    {quizStatus.quiz1Passed && (
+                      <CheckCircle 
+                        size={16} 
+                        style={{ 
+                          color: '#28a745', 
+                          marginRight: '8px', 
+                          verticalAlign: 'middle' 
+                        }} 
+                      />
+                    )}
+                    Lesson 01: Introduction to Data Protection
+                  </span>
                 </Link>
               </li>
-              <li>
-                <Link to="/quiz2" onClick={handleQuiz2Click}>
-                  <span>Lesson 02: What is ISP ?</span>
+              <li style={getQuizStyles(2)}>
+                <Link to="/quiz2" style={getQuizLinkStyles(2)} onClick={handleQuiz2Click}>
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    {!quizStatus.quiz1Passed && (
+                      <Lock 
+                        size={16} 
+                        style={{ 
+                          color: '#6c757d', 
+                          marginRight: '8px', 
+                          verticalAlign: 'middle' 
+                        }} 
+                      />
+                    )}
+                    Lesson 02: What is ISP ?
+                  </span>
                 </Link>
               </li>
-              <li>
-                <Link to="/quiz3" onClick={e => {
+              <li style={getQuizStyles(3)}>
+                <Link to="/quiz3" style={getQuizLinkStyles(3)} onClick={e => {
                   if (!quizStatus.quiz2Passed) {
                     e.preventDefault();
                     alert('Please complete and pass Quiz 2 before attempting Quiz 3.');
                   }
                 }}>
-                  <span>Lesson 03: Basics of GDPR</span>
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    <Lock 
+                      size={16} 
+                      style={{ 
+                        color: '#6c757d', 
+                        marginRight: '8px', 
+                        verticalAlign: 'middle' 
+                      }} 
+                    />
+                    Lesson 03: Basics of GDPR
+                  </span>
                 </Link>
               </li>
-              <li>
-                <Link to="/quiz4" onClick={e => {
+              <li style={getQuizStyles(4)}>
+                <Link to="/quiz4" style={getQuizLinkStyles(4)} onClick={e => {
                   if (!quizStatus.quiz3Passed) {
                     e.preventDefault();
                     alert('Please complete and pass Quiz 3 before attempting Quiz 4.');
                   }
                 }}>
-                  <span>Lesson 04: Handling Sensitive Information</span>
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    <Lock 
+                      size={16} 
+                      style={{ 
+                        color: '#6c757d', 
+                        marginRight: '8px', 
+                        verticalAlign: 'middle' 
+                      }} 
+                    />
+                    Lesson 04: Handling Sensitive Information
+                  </span>
                 </Link>
               </li>
             </ul>

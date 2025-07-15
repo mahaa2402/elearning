@@ -1,151 +1,208 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "./contentpage.css";
 import courseImg from "../assets/course.jpg";
 import { User, ArrowRight, ArrowLeft } from "lucide-react";
 
 const Lesson03GDPR = () => {
+  const currentLessonNumber = 3;
+  const lessons = [
+    { id: 1, title: "Lesson 01: Introduction to Data Protection", path: "/contentpage" },
+    { id: 2, title: "Lesson 02: What is ISP ?", path: "/lesson2" },
+    { id: 3, title: "Lesson 03: Basics of GDPR", path: "/lesson3" },
+    { id: 4, title: "Lesson 04: Handling Sensitive Information", path: "/lesson4" },
+  ];
+
+  const quizzes = [
+    { id: 1, title: "Lesson 01: Introduction to Data Protection", path: "/quiz" },
+    { id: 2, title: "Lesson 02: What is ISP ?", path: "/quiz2" },
+    { id: 3, title: "Lesson 03: Basics of GDPR", path: "/quiz3" },
+    { id: 4, title: "Lesson 04: Handling Sensitive Information", path: "/quiz4" },
+  ];
+
+  const styles = {
+    completed: {
+      backgroundColor: "#f0f9f0",
+      borderLeft: "4px solid #22c55e",
+      borderRadius: "4px",
+      padding: "8px 12px",
+      marginBottom: "8px",
+      position: "relative",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center"
+    },
+    completedLink: {
+      color: "#16a34a",
+      textDecoration: "none",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      width: "100%",
+      marginLeft: "20px"
+    },
+    completedDuration: {
+      color: "#16a34a"
+    },
+    checkmark: {
+      position: "absolute",
+      left: "12px",
+      top: "50%",
+      transform: "translateY(-50%)",
+      color: "#22c55e",
+      fontWeight: "bold"
+    },
+    active: {
+      backgroundColor: "#ffa726",
+      borderLeft: "5px solid #fb8c00",
+      fontWeight: "600",
+      color: "white",
+      padding: "10px 12px",
+      borderRadius: "6px",
+      marginBottom: "8px",
+      textDecoration: "none",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center"
+    },
+    locked: {
+      backgroundColor: "#f0f0f0",
+      color: "#aaa",
+      padding: "10px 12px",
+      borderRadius: "6px",
+      marginBottom: "8px",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      pointerEvents: "none",
+      opacity: 0.6,
+      cursor: "not-allowed"
+    }
+  };
+
   return (
-    <div className="course-page">
+    <div style={{ padding: "20px", fontFamily: "Arial" }}>
       {/* Header Section */}
-      <div className="course-header">
-        <div className="course-header-text">
-          <h1>
-            Learn about <span className="highlight">ISP, GDPR & Compliance</span>
-          </h1>
-          <p>Basics of General Data Protection Regulation (GDPR)</p>
-        </div>
-        <div className="course-duration">30 mins</div>
+      <div style={{ marginBottom: "20px" }}>
+        <h1>
+          Learn about <span style={{ color: "#4caf50" }}>ISP, GDPR & Compliance</span>
+        </h1>
+        <p>Basics of General Data Protection Regulation (GDPR)</p>
+        <div style={{ fontWeight: "bold" }}>30 mins</div>
       </div>
 
-      <div className="course-main">
-        {/* Left section with video and content */}
-        <div className="course-left">
-          <div className="video-preview">
-            <img src={courseImg} alt="Course preview" />
-            <div className="progress-text">50% completed</div>
+      <div style={{ display: "flex", gap: "30px" }}>
+        {/* Left section */}
+        <div style={{ flex: 2 }}>
+          <div style={{ marginBottom: "20px" }}>
+            <img src={courseImg} alt="Course" style={{ width: "100%", borderRadius: "10px" }} />
+            <div style={{ marginTop: "10px", color: "green" }}>50% completed</div>
           </div>
 
-          <div className="course-content">
+          <div>
             <h2>Introduction to GDPR</h2>
-            <p>
-              The General Data Protection Regulation (GDPR) is a comprehensive data protection law that came into effect on May 25, 2018, across the European Union. It represents the most significant privacy legislation in decades, fundamentally changing how organizations collect, process, and protect personal data. GDPR applies to all organizations that process personal data of EU residents, regardless of where the organization is located, making it a truly global regulation.
-            </p>
-            
-            <p>
-              GDPR was designed to harmonize data protection laws across EU member states, giving individuals greater control over their personal data and imposing strict obligations on organizations that handle such data. The regulation aims to strengthen and unify data protection for all individuals within the EU while addressing the challenges posed by modern digital technologies and data processing practices.
-            </p>
-
+            <p>The General Data Protection Regulation (GDPR)...</p>
             <h2>Key Principles of GDPR</h2>
-            <p>
-              GDPR establishes seven fundamental principles that must guide all personal data processing activities. Lawfulness, fairness, and transparency require that data processing must have a legal basis, be conducted fairly, and be transparent to the data subject. Purpose limitation mandates that personal data must be collected for specified, explicit, and legitimate purposes and not further processed in a manner incompatible with those purposes.
-            </p>
-            
-            <p>
-              Data minimization requires that personal data must be adequate, relevant, and limited to what is necessary for the processing purposes. Accuracy mandates that personal data must be accurate and kept up to date, with reasonable steps taken to ensure inaccurate data is erased or rectified. Storage limitation requires that personal data be kept in a form that permits identification of data subjects for no longer than necessary for the processing purposes.
-            </p>
-
+            <p>GDPR establishes seven fundamental principles...</p>
             <h2>Individual Rights Under GDPR</h2>
-            <p>
-              GDPR significantly strengthens individual rights regarding personal data. The right to be informed requires organizations to provide clear and transparent information about their data processing activities through privacy notices. The right of access allows individuals to obtain confirmation of whether their personal data is being processed and, if so, to access that data along with specific information about the processing.
-            </p>
-            
-            <p>
-              The right to rectification enables individuals to have inaccurate personal data corrected and incomplete data completed. The right to erasure, also known as the "right to be forgotten," allows individuals to request deletion of their personal data in certain circumstances. The right to restrict processing enables individuals to limit how their personal data is processed in specific situations.
-            </p>
-
+            <p>GDPR significantly strengthens individual rights...</p>
             <h2>Enforcement and Penalties</h2>
-            <p>
-              GDPR enforcement is carried out by supervisory authorities in each EU member state, with the lead authority principle determining which authority takes the lead in cross-border cases. Supervisory authorities have extensive powers including conducting investigations, accessing premises and data, ordering compliance measures, and imposing administrative fines.
-            </p>
-            
-            <p>
-              GDPR provides for significant financial penalties, with administrative fines up to €20 million or 4% of annual global turnover, whichever is higher, for the most serious violations. Lower-tier violations can result in fines up to €10 million or 2% of annual global turnover. The regulation also provides for other corrective measures including warnings, reprimands, processing bans, and certification withdrawals.
-            </p>
+            <p>GDPR enforcement is carried out by supervisory authorities...</p>
 
             {/* Navigation Section */}
-            <div className="lesson-navigation">
-              <div className="nav-buttons">
-                <Link to="/lesson2" className="nav-btn prev-btn">
-                  <ArrowLeft size={16} />
-                  Previous Lesson
-                </Link>
-                <Link to="/lesson4" className="nav-btn next-btn">
-                  Next Lesson
-                  <ArrowRight size={16} />
-                </Link>
-              </div>
+            <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
+              <Link to="/lesson2" style={{ textDecoration: "none", color: "#007bff" }}>
+                <ArrowLeft size={16} /> Previous Lesson
+              </Link>
+              <Link to="/lesson4" style={{ textDecoration: "none", color: "#007bff", marginLeft: "auto" }}>
+                Next Lesson <ArrowRight size={16} />
+              </Link>
             </div>
           </div>
 
-          <div className="instructor-card">
-            <div className="avatar">
-              <User size={24} />
-            </div>
+          {/* Instructor */}
+          <div style={{ marginTop: "40px", padding: "15px", border: "1px solid #ddd", borderRadius: "8px", display: "flex", gap: "15px", alignItems: "center" }}>
+            <User size={24} />
             <div>
               <h4>Bulkin Simons</h4>
-              <p>
-                Certified Data Protection Officer with over 10 years of experience in information security and privacy compliance. Specialized in GDPR implementation, risk assessment, and privacy program development across various industries.
-              </p>
+              <p>Certified Data Protection Officer with over 10 years of experience...</p>
             </div>
           </div>
         </div>
 
-        {/* Right section with lesson list */}
-        <div className="course-right">
-          <div className="section">
+        {/* Right section */}
+        <div style={{ flex: 1 }}>
+          <div>
             <h3>Courses</h3>
-            <ul className="lesson-list">
-              <li>
-                <Link to="/contentpage">
-                  <span>Lesson 01: Introduction to DataProtection</span>
-                  <span className="duration">30 min</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/lesson2">
-                  <span>Lesson 02: What is ISP ?</span>
-                  <span className="duration">30 mins</span>
-                </Link>
-              </li>
-              <li className="active">
-                <Link to="/lesson3">
-                  <span>Lesson 03: Basics of GDPR</span>
-                  <span className="duration">30 mins</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/lesson4">
-                  <span>Lesson 04: Handling Sensitive Information</span>
-                  <span className="duration">30 mins</span>
-                </Link>
-              </li>
+            <ul style={{ listStyle: "none", paddingLeft: 0 }}>
+              {lessons.map((lesson) => {
+                if (lesson.id < currentLessonNumber) {
+                  // Completed lessons - green style
+                  return (
+                    <li key={lesson.id} style={styles.completed}>
+                      <span style={styles.checkmark}>✓</span>
+                      <Link to={lesson.path} style={styles.completedLink}>
+                        <span>{lesson.title}</span>
+                        <span style={styles.completedDuration}>30 mins</span>
+                      </Link>
+                    </li>
+                  );
+                } else if (lesson.id === currentLessonNumber) {
+                  // Current lesson - active style
+                  return (
+                    <li key={lesson.id}>
+                      <Link to={lesson.path} style={styles.active}>
+                        <span>{lesson.title}</span>
+                        <span>30 mins</span>
+                      </Link>
+                    </li>
+                  );
+                } else {
+                  // Future lessons - locked style
+                  return (
+                    <li key={lesson.id}>
+                      <div style={styles.locked}>
+                        <span>{lesson.title}</span>
+                        <span>🔒</span>
+                      </div>
+                    </li>
+                  );
+                }
+              })}
             </ul>
           </div>
 
-          <div className="section">
+          <div style={{ marginTop: "30px" }}>
             <h3>PRACTICE QUIZ</h3>
-            <ul className="lesson-list">
-              <li>
-                <Link to="/quiz">
-                  <span>Lesson 01: Introduction to Data Protection</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/quiz2">
-                  <span>Lesson 02: What is ISP ?</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/quiz3">
-                  <span>Lesson 03: Basics of GDPR</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/quiz4">
-                  <span>Lesson 04: Handling Sensitive Information</span>
-                </Link>
-              </li>
+            <ul style={{ listStyle: "none", paddingLeft: 0 }}>
+              {quizzes.map((quiz) => {
+                if (quiz.id < currentLessonNumber) {
+                  // Completed quizzes - green style
+                  return (
+                    <li key={quiz.id} style={styles.completed}>
+                      <span style={styles.checkmark}>✓</span>
+                      <Link to={quiz.path} style={styles.completedLink}>
+                        <span>{quiz.title}</span>
+                      </Link>
+                    </li>
+                  );
+                } else if (quiz.id === currentLessonNumber) {
+                  // Current quiz - available
+                  return (
+                    <li key={quiz.id} style={{ marginBottom: "8px" }}>
+                      <Link to={quiz.path} style={{ textDecoration: "none", color: "#007bff" }}>
+                        {quiz.title}
+                      </Link>
+                    </li>
+                  );
+                } else {
+                  // Future quizzes - locked
+                  return (
+                    <li key={quiz.id} style={{ marginBottom: "8px", color: "#aaa", pointerEvents: "none" }}>
+                      {quiz.title} 🔒
+                    </li>
+                  );
+                }
+              })}
             </ul>
           </div>
         </div>

@@ -10,9 +10,11 @@ const adminRoutes = require('./routes/Admin');
 const courseRoutes = require('./routes/Course');
 const employeeRoutes = require('./routes/Employee');
 const assignedTaskRoutes = require('./routes/AssignedTask');
+const progressRoutes = require('./routes/progressRoutes');
 const { createAssignedTask, getAssignedTasks, getAssignedTaskById, updateAssignedTaskProgress, deleteAssignedTask } = require('./controllers/Admin');
 
 const app = express();
+
 
 console.log('🔧 Starting E-learning Server...');
 
@@ -74,6 +76,7 @@ app.use('/api', adminRoutes); // ADDED: Also mount admin routes directly at /api
 app.use('/api/courses', courseRoutes);
 app.use('/api', employeeRoutes);
 app.use('/api', assignedTaskRoutes);
+app.use('/api/progress', progressRoutes);
 
 // Test and Health Routes
 app.get('/', (req, res) => {

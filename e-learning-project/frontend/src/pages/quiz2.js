@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import './quiz.css';
+const email = localStorage.getItem("employeeEmail"); // stored at login
+const currentLevel = parseInt(localStorage.getItem("levelCleared")) || 0;
+const thisLesson = 4; // Set this based on current lesson
+
 
 const questions = [
   {
@@ -151,14 +155,49 @@ const QuizLesson2 = () => {
     }
   };
 
-  const handleSubmit = () => {
-    setShowResults(true);
-    const passed = calculateScore() / questionSet.length >= 0.5;
-    localStorage.setItem('quiz2Passed', passed ? 'true' : 'false');
-    if (!passed) {
-      localStorage.setItem('quiz2Retake', 'true');
+const handleSubmit = async () => {
+  setShowResults(true);
+  const score = calculateScore();
+  const passed = score / questions.length >= 0.5;
+
+  // Get auth token
+  const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+  
+  try {
+    // Submit quiz progress to new endpoint
+    const response = await fetch("http://localhost:5000/api/progress/submit-quiz", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        quizId: 2,
+        quizName: "ISP Quiz",
+        score: score,
+        totalQuestions: questions.length,
+        passed: passed
+      }),
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      console.log('Quiz progress saved:', result);
+      
+      // Update local storage for backward compatibility
+      if (passed) {
+        let currentLevel = parseInt(localStorage.getItem("levelCleared")) || 0;
+        const updatedLevel = currentLevel + 1;
+        localStorage.setItem("levelCleared", updatedLevel);
+      }
+    } else {
+      console.error('Failed to save quiz progress');
     }
-  };
+  } catch (error) {
+    console.error('Error saving quiz progress:', error);
+  }
+};
+
 
   const calculateScore = () => {
     let correct = 0;

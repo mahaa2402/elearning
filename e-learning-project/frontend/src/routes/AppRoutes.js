@@ -13,7 +13,7 @@ import Sidebar from '../pages/sidebar';
 import AssignTask from '../pages/assigntask';
 import EmployeeTracking from '../pages/employeetracking';
 import UserDashboard from '../pages/userdashboard';
-import ContentPage from '../pages/contentpage';
+import Lesson1 from '../pages/lesson1page';
 import CourseDetailPage from '../pages/coursedetailpage';
 import CourseModules from '../pages/coursemodule';
 import Lesson2 from '../pages/lesson2page';
@@ -41,7 +41,7 @@ function AppRoutes() {
         <Route path="/assigntask" element={<AssignTask />} />
         <Route path="/employeetracking" element={<EmployeeTracking />} />
          <Route path="/userdashboard" element={<UserDashboard />} />
-         <Route path="/contentpage" element={<ContentPage />} />
+         <Route path="/lesson1" element={<Lesson1 />} />
         <Route path="/coursedetailpage" element={<CourseDetailPage />} />
          
          <Route path="/coursemodules" element={<CourseModules />} />

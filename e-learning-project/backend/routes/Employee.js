@@ -173,4 +173,35 @@ router.get('/employees', async (req, res) => {
   }
 });
 
+
+router.get('/progress/:email', async (req, res) => {
+  try {
+    const employee = await Employee.findOne({ email: req.params.email });
+    if (!employee) return res.status(404).json({ message: 'Employee not found' });
+
+    res.json({ levelCount: employee.levelCount });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+// POST /api/update-progress
+router.post('/update-progress', async (req, res) => {
+  const { email, levelCount } = req.body;
+
+  try {
+    const employee = await Employee.findOneAndUpdate(
+      { email: email },
+      { levelCount: levelCount },
+      { new: true }
+    );
+
+    if (!employee) return res.status(404).json({ message: 'Employee not found' });
+
+    res.json({ message: 'Progress updated', levelCount: employee.levelCount });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
 module.exports = router;
