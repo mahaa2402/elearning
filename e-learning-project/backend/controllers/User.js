@@ -1,5 +1,7 @@
 const User = require('../models/User'); // Adjust path according to your User model location
 const jwt = require('jsonwebtoken');
+const Quiz = require('../models/Quiz'); // path depends on your folder structure
+
 
 // Get user profile
 const getUserProfile = async (req, res) => {
@@ -168,9 +170,23 @@ const changePassword = async (req, res) => {
   }
 };
 
+
+
+const getQuizTitles = async (req, res) => {
+  try {
+    const titles = await Quiz.getAllTitles();
+    res.json({ titles });
+  } catch (err) {
+    console.error('Error fetching titles:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
 module.exports = {
   getUserProfile,
   updateUserProfile,
   getUserStats,
-  changePassword
+  changePassword,
+  getQuizTitles
 };

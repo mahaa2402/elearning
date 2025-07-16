@@ -39,7 +39,7 @@ const courseSchema = new mongoose.Schema({
   enrollments: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
-});
+}, { collection: 'admin_courses' });
 
 const Course = mongoose.model('Course', courseSchema);
 

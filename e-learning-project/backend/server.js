@@ -41,7 +41,7 @@ app.use((req, res, next) => {
 });
 
 // MongoDB connection
-const mongoURI = 'mongodb+srv://mahaashri:mahaashri%40123@e-learning-platform.wx1swy3.mongodb.net/elearning?retryWrites=true&w=majority';
+//const mongoURI = 'mongodb+srv://mahaashri:mahaashri%40123@e-learning-platform.wx1swy3.mongodb.net/elearning?retryWrites=true&w=majority';
 
 // Create default admin account if none exists (for testing)
 const createDefaultAdmin = async () => {
@@ -62,7 +62,7 @@ const createDefaultAdmin = async () => {
   }
 };
 
-mongoose.connect(mongoURI)
+mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('✅ Connected to MongoDB Atlas');
     createDefaultAdmin();
