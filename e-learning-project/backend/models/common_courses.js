@@ -27,6 +27,12 @@ const courseSchema = new mongoose.Schema(
   
 );
 
-const Course = mongoose.model('Course', courseSchema);
 
-module.exports = Course;
+courseSchema.statics.getCourseInfoWithoutModules = async function () {
+  const courses = await this.find({}, '-modules').lean();
+  return courses;
+};
+
+const Common_Course = mongoose.model('CommonCourse', courseSchema);
+
+module.exports = Common_Course;
