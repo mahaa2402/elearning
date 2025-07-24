@@ -132,7 +132,7 @@ function LandingPage() {
         <nav>
           <Link to="/userdashboard">Home</Link>
           {isLoggedIn && <Link to="/coursemodules">Courses</Link>}
-          {isLoggedIn && <Link to="/customize">Customize Course</Link>}
+          {isLoggedIn && <Link to="/userdashboard">Dashboard</Link>}
           <a href="#aboutus">About</a>
         </nav>
         <div className="nav-buttons">

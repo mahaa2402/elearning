@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { User, Mail, Building, Calendar, RefreshCw, AlertCircle } from 'lucide-react';
 import './employeetracking.css'; // Import the CSS file
+import { useNavigate } from 'react-router-dom';
 
-const EmployeeCard = ({ employee }) => {
+const EmployeeCard = ({ employee, onViewDetails }) => {
   return (
     <div className="employee-card">
       <div className="employee-card-header">
@@ -16,7 +17,7 @@ const EmployeeCard = ({ employee }) => {
           </span>
         </div>
       </div>
-      
+
       <div className="employee-info-list">
         <div className="employee-info-item">
           <Mail className="employee-info-icon" />
@@ -33,7 +34,9 @@ const EmployeeCard = ({ employee }) => {
           </span>
         </div>
       </div>
-      <button class="button2">View Details</button>
+
+      <button className="button2" onClick={() => onViewDetails(employee)}>View Details</button>
+
       <div className="employee-card-footer">
         <span className="employee-footer-label">Employee ID</span>
         <span className="employee-footer-value">
@@ -48,10 +51,12 @@ const EmployeeDirectory = () => {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [selectedCertificate, setSelectedCertificate] = useState(null);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  
+  const navigate = useNavigate(); // Move navigate inside the component
 
-  // Function to get authentication token from various possible sources
   const getAuthToken = () => {
-    // Check various common storage locations for auth tokens
     return (
       localStorage.getItem('authToken') ||
       localStorage.getItem('accessToken') ||
@@ -61,7 +66,6 @@ const EmployeeDirectory = () => {
       sessionStorage.getItem('accessToken') ||
       sessionStorage.getItem('token') ||
       sessionStorage.getItem('jwt') ||
-      // Check for tokens in cookies if available
       document.cookie.split('; ').find(row => row.startsWith('authToken='))?.split('=')[1] ||
       document.cookie.split('; ').find(row => row.startsWith('accessToken='))?.split('=')[1] ||
       document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1]
@@ -78,7 +82,7 @@ const EmployeeDirectory = () => {
         throw new Error('No authentication token found. Please log in.');
       }
 
-      const response = await fetch('http://localhost:5000/api/employees', {
+      const response = await fetch('http://localhost:5000/api/employee/employees', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -86,6 +90,8 @@ const EmployeeDirectory = () => {
         },
         credentials: 'include'
       });
+
+      console.log(response)
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -102,12 +108,15 @@ const EmployeeDirectory = () => {
     }
   };
 
-  // Load employees on component mount
+  const onViewDetails = (employee) => {
+
+    navigate(`/certificatedetail/${employee._id}`); // pass employee ID in URL
+  };
+
   useEffect(() => {
     fetchEmployees();
   }, []);
 
-  // Loading state
   if (loading) {
     return (
       <div className="employee-directory-container">
@@ -123,7 +132,6 @@ const EmployeeDirectory = () => {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div className="employee-directory-container">
@@ -157,6 +165,7 @@ const EmployeeDirectory = () => {
   return (
     <div className="employee-directory-container">
       <div className="employee-directory-max-width">
+
         {/* Header */}
         <div className="employee-directory-header">
           <div>
@@ -195,14 +204,35 @@ const EmployeeDirectory = () => {
           </div>
         ) : employees.length > 0 ? (
           <div className="employee-directory-grid">
-            {employees.map((employee) => (
-              <EmployeeCard 
-                key={employee._id || employee.id || employee.email} 
-                employee={employee} 
-              />
-            ))}
+           {employees.map((employee) => (
+            <EmployeeCard 
+              key={employee._id || employee.id || employee.email} 
+              employee={employee}
+              onViewDetails={onViewDetails}
+            />
+           ))}
           </div>
         ) : null}
+
+        {/* Certificate Viewer */}
+        {selectedCertificate && (
+          <div className="employee-certificate-modal">
+            <h2>Certificate Details for {selectedEmployee?.name}</h2>
+            <p><strong>Course:</strong> {selectedCertificate.courseTitle}</p>
+            <p><strong>Date:</strong> {new Date(selectedCertificate.date).toLocaleDateString()}</p>
+            <p><strong>Awarded By:</strong> {selectedCertificate.awarder}</p>
+            <p><strong>Description:</strong> {selectedCertificate.description}</p>
+            <button 
+              className="employee-directory-button"
+              onClick={() => {
+                setSelectedCertificate(null);
+                setSelectedEmployee(null);
+              }}
+            >
+              Close
+            </button>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="employee-directory-footer">

@@ -17,6 +17,28 @@ const CourseDetail = () => {
 
   // Mark this lesson as viewed on mount
   useEffect(() => {
+    // Fetch user progress from backend
+    const fetchProgress = async () => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const userEmail = localStorage.getItem('employeeEmail');
+      const courseName = 'ISP Basics';
+      if (!token || !userEmail) return;
+      try {
+        const res = await fetch(`http://localhost:5000/api/progress/get?userEmail=${encodeURIComponent(userEmail)}&courseName=${encodeURIComponent(courseName)}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Failed to fetch progress');
+        const data = await res.json();
+        if (data.progress) {
+          // Optionally update local state or localStorage for compatibility
+          localStorage.setItem('lastAccessedModule', data.progress.lastAccessedModule);
+          // You can use data.progress.completedModules to enforce sequential navigation
+        }
+      } catch (err) {
+        console.error('Error fetching progress:', err);
+      }
+    };
+    fetchProgress();
     localStorage.setItem('lesson1Viewed', 'true');
   }, []);
 

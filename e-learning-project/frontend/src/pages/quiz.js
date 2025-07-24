@@ -243,48 +243,52 @@ const Quiz = () => {
       setCurrentQuestion(prev => prev - 1);
     }
   };
-const handleSubmit = async () => {
-  setShowResults(true);
-  const score = calculateScore();
-  const passed = score / questions.length >= 0.5;
 
-  // Get auth token
-  const token = localStorage.getItem('authToken') || localStorage.getItem('token');
-  
-  try {
-    // Submit quiz progress to new endpoint
-    const response = await fetch("http://localhost:5000/api/progress/submit-quiz", {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        quizId: 1,
-        quizName: "ISP Basics Quiz",
-        score: score,
-        totalQuestions: questions.length,
-        passed: passed
-      }),
-    });
+  const handleSubmit = async () => {
+    setShowResults(true);
+    const score = calculateScore();
+    const passed = score / questions.length >= 0.5;
 
-    if (response.ok) {
-      const result = await response.json();
-      console.log('Quiz progress saved:', result);
-      
-      // Update local storage for backward compatibility
-      if (passed) {
-        let currentLevel = parseInt(localStorage.getItem("levelCleared")) || 0;
-        const updatedLevel = currentLevel + 1;
-        localStorage.setItem("levelCleared", updatedLevel);
+    // Get auth token
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    const userEmail = email; // from localStorage
+    const courseName = 'ISP Basics'; // or dynamic course/module name
+    const m_id = 'lesson1'; // or dynamic module/lesson ID
+    const completedAt = new Date().toISOString();
+
+    try {
+      // Submit quiz progress to new endpoint
+      const response = await fetch("http://localhost:5000/api/progress/submit-quiz", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          userEmail,
+          courseName,
+          completedModules: [{ m_id, completedAt }],
+          lastAccessedModule: m_id
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Quiz progress saved:', result);
+        // Update local storage for backward compatibility
+        if (passed) {
+          let currentLevel = parseInt(localStorage.getItem("levelCleared")) || 0;
+          const updatedLevel = currentLevel + 1;
+          localStorage.setItem("levelCleared", updatedLevel);
+        }
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to save quiz progress', errorData);
       }
-    } else {
-      console.error('Failed to save quiz progress');
+    } catch (error) {
+      console.error('Error saving quiz progress:', error);
     }
-  } catch (error) {
-    console.error('Error saving quiz progress:', error);
-  }
-};
+  };
 
   const calculateScore = () => {
     let correct = 0;
@@ -308,6 +312,8 @@ const handleSubmit = async () => {
     const score = calculateScore();
     const percentage = (score / questions.length) * 100;
     const isPassed = percentage >= 50;
+// Inside your Quiz component file, just before `return` or within the component
+
 
     return (
       <div className="results-container">

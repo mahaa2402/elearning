@@ -224,60 +224,7 @@ const TaskDetailPage = () => {
               </div>
             </section>
 
-            <section className="video-section">
-              <h2 className="section-title">Related Videos</h2>
-              {videos.length > 0 ? (
-                <div className="video-grid">
-                  {videos.map((video) => (
-                    <div key={video.id} className="video-card">
-                      <div className="video-thumbnail">
-                        <img src={video.thumbnail} alt={video.title} className="thumbnail-image" />
-                        <button className="play-overlay" onClick={() => window.open(video.url, '_blank')}>
-                          <Play className="play-icon" />
-                        </button>
-                      </div>
-                      <div className="video-info">
-                        <h3 className="video-title">{video.title}</h3>
-                        <p className="video-duration">{video.duration}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="empty-state">
-                  <p className="empty-state-text">No videos available for this task.</p>
-                </div>
-              )}
-            </section>
-
-            <section className="quiz-section">
-              <h2 className="section-title">Related Quizzes</h2>
-              {quizzes.length > 0 ? (
-                <div className="quiz-grid">
-                  {quizzes.map((quiz) => (
-                    <div key={quiz.id} className="quiz-card">
-                      <div className="quiz-info">
-                        <FileText className="quiz-icon" />
-                        <h3 className="quiz-title">{quiz.title}</h3>
-                        <p className="quiz-details">Questions: {quiz.questions.length}</p>
-                        <p className="quiz-details">Passing Score: {quiz.passingScore}%</p>
-                        <button 
-                          className="btn btn-primary"
-                          onClick={() => navigate(`/quiz/${quiz.id}`, { state: { quiz } })}
-                        >
-                          Take Quiz
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="empty-state">
-                  <p className="empty-state-text">No quizzes available for this task.</p>
-                </div>
-              )}
-            </section>
-          </>
+           </>
         )}
       </main>
     </div>

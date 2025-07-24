@@ -97,7 +97,11 @@ const handleSubmit = async () => {
 
   // Get auth token
   const token = localStorage.getItem('authToken') || localStorage.getItem('token');
-  
+  const userEmail = email; // from localStorage
+  const courseName = 'ISP Basics'; // or dynamic course/module name
+  const m_id = 'lesson4'; // or dynamic module/lesson ID
+  const completedAt = new Date().toISOString();
+
   try {
     // Submit quiz progress to new endpoint
     const response = await fetch("http://localhost:5000/api/progress/submit-quiz", {
@@ -107,11 +111,10 @@ const handleSubmit = async () => {
         "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({
-        quizId: 4,
-        quizName: "Data Protection Quiz",
-        score: score,
-        totalQuestions: questions.length,
-        passed: passed
+        userEmail,
+        courseName,
+        completedModules: [{ m_id, completedAt }],
+        lastAccessedModule: m_id
       }),
     });
 
@@ -126,7 +129,8 @@ const handleSubmit = async () => {
         localStorage.setItem("levelCleared", updatedLevel);
       }
     } else {
-      console.error('Failed to save quiz progress');
+      const errorData = await response.json();
+      console.error('Failed to save quiz progress', errorData);
     }
   } catch (error) {
     console.error('Error saving quiz progress:', error);
@@ -162,11 +166,12 @@ const handleSubmit = async () => {
               {isPassed ? 'Congratulations! You passed.' : 'Please try again.'}
             </div>
           </div>
-          {!isPassed ? (
-            <button onClick={resetQuiz} className="retake-button">Retake Quiz</button>
-          ) : (
-            <button onClick={() => window.location.href = '/lesson4'} className="next-course-button">Start Next Course</button>
-          )}
+        {!isPassed ? (
+  <button onClick={resetQuiz} className="retake-button">Retake Quiz</button>
+) : (
+  <button onClick={() => window.location.href = '/certificate'} className="next-course-button">View Certificate</button>
+)}
+
         </div>
       </div>
     );

@@ -14,65 +14,45 @@ const Lesson02ISP = () => {
     quiz4Passed: localStorage.getItem('quiz4Passed') === 'true',
   });
 
-  // Mark this lesson as viewed on mount
+  // Check access but don't mark as completed yet
   useEffect(() => {
-    localStorage.setItem('lesson2Viewed', 'true');
-
-    // Fetch quiz completion status from backend
-    const fetchQuizStatus = async () => {
+    // Fetch user progress from backend
+    const fetchProgress = async () => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const userEmail = localStorage.getItem('employeeEmail');
+      const courseName = 'ISP Basics';
+      if (!token || !userEmail) return;
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          console.error('No token found, redirecting to login');
-          navigate('/login');
-          return;
-        }
-
-        const response = await fetch('http://localhost:5000/api/quiz-status', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
+        const res = await fetch(`http://localhost:5000/api/progress/get?userEmail=${encodeURIComponent(userEmail)}&courseName=${encodeURIComponent(courseName)}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
         });
-
-        if (!response.ok) {
-          if (response.status === 403 || response.status === 401) {
-            localStorage.removeItem('token');
-            navigate('/login');
-            throw new Error('Invalid or expired token');
-          }
-          throw new Error('Failed to fetch quiz status');
+        if (!res.ok) throw new Error('Failed to fetch progress');
+        const data = await res.json();
+        if (data.progress) {
+          // Optionally update local state or localStorage for compatibility
+          localStorage.setItem('lastAccessedModule', data.progress.lastAccessedModule);
+          // You can use data.progress.completedModules to enforce sequential navigation
         }
-
-        const data = await response.json();
-        setQuizStatus({
-          quiz1Passed: data.quiz1Passed || false,
-          quiz2Passed: data.quiz2Passed || false,
-          quiz3Passed: data.quiz3Passed || false,
-          quiz4Passed: data.quiz4Passed || false,
-        });
-
-        // Update localStorage to reflect backend status
-        localStorage.setItem('quiz1Passed', data.quiz1Passed ? 'true' : 'false');
-        localStorage.setItem('quiz2Passed', data.quiz2Passed ? 'true' : 'false');
-        localStorage.setItem('quiz3Passed', data.quiz3Passed ? 'true' : 'false');
-        localStorage.setItem('quiz4Passed', data.quiz4Passed ? 'true' : 'false');
-      } catch (error) {
-        console.error('Error fetching quiz status:', error.message);
+      } catch (err) {
+        console.error('Error fetching progress:', err);
       }
     };
-
-    fetchQuizStatus();
-  }, [navigate]);
-
-  // Handler for Quiz 2 link
-  const handleQuiz2Click = (e) => {
-    if (!quizStatus.quiz1Passed) {
-      e.preventDefault();
-      alert('Please complete and pass Quiz 1 before attempting Quiz 2.');
+    fetchProgress();
+    // Check if user has access to this lesson
+    const lesson1Viewed = localStorage.getItem('lesson1Viewed') === 'true';
+    if (!lesson1Viewed) {
+      console.log('Redirecting to lesson1 - prerequisite not met');
+      navigate('/lesson1', { replace: true });
+      return;
     }
-  };
+
+    // Optional: Update current level if this is the user's current position
+    const currentLevel = parseInt(localStorage.getItem('levelCleared')) || 0;
+    if (currentLevel === 1) {
+      // User is currently on lesson 2, this is correct
+      console.log('User is on correct lesson 2');
+    }
+  }, [navigate]);
 
   // Helper function to get lesson styles
   const getLessonStyles = (lessonNumber) => {
@@ -98,8 +78,8 @@ const Lesson02ISP = () => {
     if (isActive) {
       return {
         ...baseStyle,
-        backgroundColor: '#e3f2fd',
-        border: '1px solid #2196f3'
+        backgroundColor: '#fff3cd',
+        border: '1px solid #ffc107'
       };
     }
     if (isLocked) {
@@ -116,7 +96,8 @@ const Lesson02ISP = () => {
   // Helper function to get quiz styles
   const getQuizStyles = (quizNumber) => {
     const isPassed = quizStatus[`quiz${quizNumber}Passed`];
-    const isLocked = quizNumber > 2 || (quizNumber === 2 && !quizStatus.quiz1Passed);
+    // Quiz 1 is always accessible, Quiz 2 is accessible on lesson 2, Quiz 3+ locked until previous quiz passed
+    const isLocked = quizNumber >= 3 && !quizStatus[`quiz${quizNumber - 1}Passed`];
 
     const baseStyle = {
       padding: '12px 16px',
@@ -126,7 +107,7 @@ const Lesson02ISP = () => {
       border: '1px solid #dee2e6'
     };
 
-    if (isPassed && quizNumber < 2) {
+    if (isPassed) {
       return {
         ...baseStyle,
         backgroundColor: '#d4edda',
@@ -167,7 +148,7 @@ const Lesson02ISP = () => {
     if (isActive) {
       return {
         ...baseStyle,
-        color: '#1976d2',
+        color: '#856404',
         fontWeight: '600'
       };
     }
@@ -185,7 +166,8 @@ const Lesson02ISP = () => {
   // Helper function to get quiz link styles
   const getQuizLinkStyles = (quizNumber) => {
     const isPassed = quizStatus[`quiz${quizNumber}Passed`];
-    const isLocked = quizNumber > 2 || (quizNumber === 2 && !quizStatus.quiz1Passed);
+    // Quiz 1 is always accessible, Quiz 2 is accessible on lesson 2, Quiz 3+ locked until previous quiz passed
+    const isLocked = quizNumber >= 3 && !quizStatus[`quiz${quizNumber - 1}Passed`];
 
     const baseStyle = {
       display: 'flex',
@@ -195,7 +177,7 @@ const Lesson02ISP = () => {
       textDecoration: 'none'
     };
 
-    if (isPassed && quizNumber < 2) {
+    if (isPassed) {
       return {
         ...baseStyle,
         color: '#155724'
@@ -233,7 +215,9 @@ const Lesson02ISP = () => {
               src={video2} 
               controls 
               style={{ height: '480px', objectFit: 'cover', width: '100%' }}
-              poster=""
+              onError={(e) => {
+                console.error('Video failed to load:', e);
+              }}
             >
               Your browser does not support the video tag.
             </video>
@@ -333,14 +317,16 @@ const Lesson02ISP = () => {
                   }
                 }}>
                   <span style={{ display: 'flex', alignItems: 'center' }}>
-                    <Lock 
-                      size={16} 
-                      style={{ 
-                        color: '#6c757d', 
-                        marginRight: '8px', 
-                        verticalAlign: 'middle' 
-                      }} 
-                    />
+                    {localStorage.getItem('lesson2Viewed') !== 'true' && (
+                      <Lock 
+                        size={16} 
+                        style={{ 
+                          color: '#6c757d', 
+                          marginRight: '8px', 
+                          verticalAlign: 'middle' 
+                        }} 
+                      />
+                    )}
                     Lesson 03: Basics of GDPR
                   </span>
                   <span style={{ fontSize: '0.9em', color: '#6c757d' }}>30 mins</span>
@@ -354,14 +340,16 @@ const Lesson02ISP = () => {
                   }
                 }}>
                   <span style={{ display: 'flex', alignItems: 'center' }}>
-                    <Lock 
-                      size={16} 
-                      style={{ 
-                        color: '#6c757d', 
-                        marginRight: '8px', 
-                        verticalAlign: 'middle' 
-                      }} 
-                    />
+                    {localStorage.getItem('lesson3Viewed') !== 'true' && (
+                      <Lock 
+                        size={16} 
+                        style={{ 
+                          color: '#6c757d', 
+                          marginRight: '8px', 
+                          verticalAlign: 'middle' 
+                        }} 
+                      />
+                    )}
                     Lesson 04: Handling Sensitive Information
                   </span>
                   <span style={{ fontSize: '0.9em', color: '#6c757d' }}>30 mins</span>
@@ -391,13 +379,13 @@ const Lesson02ISP = () => {
                 </Link>
               </li>
               <li style={getQuizStyles(2)}>
-                <Link to="/quiz2" style={getQuizLinkStyles(2)} onClick={handleQuiz2Click}>
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    {!quizStatus.quiz1Passed && (
-                      <Lock 
+                <Link to="/quiz2" style={getQuizLinkStyles(2)}>
+                  <span style={{ display: 'flex', alignItems: 'center', color: '#007bff' }}>
+                    {quizStatus.quiz2Passed && (
+                      <CheckCircle 
                         size={16} 
                         style={{ 
-                          color: '#6c757d', 
+                          color: '#28a745', 
                           marginRight: '8px', 
                           verticalAlign: 'middle' 
                         }} 
@@ -415,14 +403,26 @@ const Lesson02ISP = () => {
                   }
                 }}>
                   <span style={{ display: 'flex', alignItems: 'center' }}>
-                    <Lock 
-                      size={16} 
-                      style={{ 
-                        color: '#6c757d', 
-                        marginRight: '8px', 
-                        verticalAlign: 'middle' 
-                      }} 
-                    />
+                    {!quizStatus.quiz2Passed && (
+                      <Lock 
+                        size={16} 
+                        style={{ 
+                          color: '#6c757d', 
+                          marginRight: '8px', 
+                          verticalAlign: 'middle' 
+                        }} 
+                      />
+                    )}
+                    {quizStatus.quiz3Passed && (
+                      <CheckCircle 
+                        size={16} 
+                        style={{ 
+                          color: '#28a745', 
+                          marginRight: '8px', 
+                          verticalAlign: 'middle' 
+                        }} 
+                      />
+                    )}
                     Lesson 03: Basics of GDPR
                   </span>
                 </Link>
@@ -435,14 +435,26 @@ const Lesson02ISP = () => {
                   }
                 }}>
                   <span style={{ display: 'flex', alignItems: 'center' }}>
-                    <Lock 
-                      size={16} 
-                      style={{ 
-                        color: '#6c757d', 
-                        marginRight: '8px', 
-                        verticalAlign: 'middle' 
-                      }} 
-                    />
+                    {!quizStatus.quiz3Passed && (
+                      <Lock 
+                        size={16} 
+                        style={{ 
+                          color: '#6c757d', 
+                          marginRight: '8px', 
+                          verticalAlign: 'middle' 
+                        }} 
+                      />
+                    )}
+                    {quizStatus.quiz4Passed && (
+                      <CheckCircle 
+                        size={16} 
+                        style={{ 
+                          color: '#28a745', 
+                          marginRight: '8px', 
+                          verticalAlign: 'middle' 
+                        }} 
+                      />
+                    )}
                     Lesson 04: Handling Sensitive Information
                   </span>
                 </Link>

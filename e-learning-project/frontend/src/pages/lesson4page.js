@@ -255,13 +255,12 @@ const Lesson04SensitiveInfo = () => {
               </li>
               <li>
                 {/* Quiz 4 link is disabled until quiz 1 is passed */}
-                {localStorage.getItem('quiz1Passed') === 'true' ? (
+              
                   <Link to="/quiz4">
                     <span>Lesson 04: Handling Sensitive Information</span>
                   </Link>
-                ) : (
-                  <span className="disabled-quiz" title="Complete and pass Quiz 1 first">Lesson 04: Handling Sensitive Information (Locked)</span>
-                )}
+                
+                
               </li>
             </ul>
           </div>

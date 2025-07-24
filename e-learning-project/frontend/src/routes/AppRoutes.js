@@ -24,6 +24,9 @@ import QuizLesson2 from '../pages/quiz2';
 import QuizLesson3 from '../pages/quiz3';
 import QuizLesson4 from '../pages/quiz4';
 import TaskDetailPage from '../pages/taskdetailpage';
+import CertificatePage from '../pages/certificate';
+import CertificateDetails from '../pages/certificatedetail';
+
 
 
 
@@ -43,6 +46,7 @@ function AppRoutes() {
          <Route path="/userdashboard" element={<UserDashboard />} />
          <Route path="/lesson1" element={<Lesson1 />} />
         <Route path="/coursedetailpage" element={<CourseDetailPage />} />
+        <Route path="/certificate" element={<CertificatePage />} />
          
          <Route path="/coursemodules" element={<CourseModules />} />
         <Route path="/lesson2" element={<Lesson2 />} />
@@ -53,6 +57,8 @@ function AppRoutes() {
         <Route path="/quiz3" element={<QuizLesson3 />} />
         <Route path="/quiz4" element={<QuizLesson4 />} />
         <Route path="/taskdetailpage" element={<TaskDetailPage />} />
+
+        <Route path="/certificatedetail/:id" element={<CertificateDetails />} />
         
         {/* Add more routes as needed */}
           
