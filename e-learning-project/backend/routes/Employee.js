@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Employee = require('../models/Employee');
 const jwt = require('jsonwebtoken');
+const Certificate = require('../models/certificate'); // Fixed path to match actual filename
+
 
 // Authentication middleware
 const authenticateToken = (req, res, next) => {
@@ -202,6 +204,11 @@ router.post('/update-progress', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+
+const { v4: uuidv4 } = require('uuid'); // for generating certificateId
+
+
 
 
 module.exports = router;

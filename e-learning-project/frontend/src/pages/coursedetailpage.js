@@ -60,11 +60,29 @@ const CourseDetailPage = () => {
 
  const navigate = useNavigate();
 
-const handleStartLesson = () => {
-  const levelCleared = parseInt(localStorage.getItem("levelCleared")) || 0;
-  const nextLessonId = levelCleared + 1;
-  console.log(`Navigating to Lesson ${nextLessonId}`);
-  navigate(`/lesson${nextLessonId}`); // Adjust route as needed
+const handleStartLesson = async () => {
+  const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+  const userEmail = localStorage.getItem('employeeEmail');
+  const courseName = 'ISP Basics';
+  if (!token || !userEmail) {
+    navigate('/login');
+    return;
+  }
+  try {
+    const res = await fetch(`http://localhost:5000/api/progress/get?userEmail=${encodeURIComponent(userEmail)}&courseName=${encodeURIComponent(courseName)}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error('Failed to fetch progress');
+    const data = await res.json();
+    if (data.progress && data.progress.lastAccessedModule) {
+      navigate(`/${data.progress.lastAccessedModule}`);
+    } else {
+      navigate('/lesson1');
+    }
+  } catch (err) {
+    console.error('Error fetching progress:', err);
+    navigate('/lesson1');
+  }
 };
 
 
@@ -215,7 +233,7 @@ const handleStartLesson = () => {
                   <div className="course-detail-outline-actions">
                     <button 
                       className="course-detail-btn course-detail-btn-start"
-                      onClick={() => handleStartLesson(section.id)}
+                      onClick={handleStartLesson}
                     >
                       Get Started
                     </button>

@@ -186,7 +186,7 @@ const fetchAdminProfile = async () => {
         throw new Error('Authentication token not found. Please login again.');
       }
 
-      const response = await fetch('http://localhost:5000/api/assignedtasks', {
+      const response = await fetch('http://localhost:5000/api/assigned-tasks', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

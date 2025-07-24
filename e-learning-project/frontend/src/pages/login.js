@@ -56,6 +56,38 @@ const Login = () => {
             console.error("Error fetching progress:", err);
           });
 
+        // Fetch user progress after login
+        const courseName = 'ISP Basics'; // or dynamic course name if available
+        fetch(`http://localhost:5000/api/progress/get?userEmail=${encodeURIComponent(userData.email)}&courseName=${encodeURIComponent(courseName)}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+          .then(res => {
+            if (!res.ok) throw new Error("Failed to fetch progress");
+            return res.json();
+          })
+          .then(data => {
+            const progress = data.progress;
+            if (progress && progress.lastAccessedModule) {
+              // Redirect to the last accessed module (lesson or quiz page)
+              setTimeout(() => {
+                navigate(`/${progress.lastAccessedModule}`);
+              }, 100);
+            } else {
+              // Default to dashboard
+              setTimeout(() => {
+                navigate(userData.role === 'admin' ? '/admindashboard' : '/userdashboard');
+              }, 100);
+            }
+          })
+          .catch(err => {
+            console.error("Error fetching progress:", err);
+            setTimeout(() => {
+              navigate(userData.role === 'admin' ? '/admindashboard' : '/userdashboard');
+            }, 100);
+          });
+
         const userRole = userData.role || res.data.role;
         setTimeout(() => {
           navigate(userRole === 'admin' ? '/admindashboard' : '/');

@@ -12,6 +12,9 @@ const employeeRoutes = require('./routes/Employee');
 const assignedTaskRoutes = require('./routes/AssignedTask');
 const progressRoutes = require('./routes/progressRoutes');
 const { createAssignedTask, getAssignedTasks, getAssignedTaskById, updateAssignedTaskProgress, deleteAssignedTask } = require('./controllers/Admin');
+const certificateRoutes = require('./routes/CertificateRoutes'); // Fixed path to match actual filename
+
+
 
 const app = express();
 
@@ -72,74 +75,56 @@ mongoose.connect(process.env.MONGO_URI)
 // Routes Setup
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes); // Admin routes at /api/admin/*
-app.use('/api', adminRoutes); // ADDED: Also mount admin routes directly at /api/* for frontend compatibility
+//app.use('/api/admin', adminRoutes); // ADDED: Also mount admin routes directly at /api/* for frontend compatibility
 app.use('/api/courses', courseRoutes);
-app.use('/api', employeeRoutes);
+app.use('/api/employee', employeeRoutes);
 app.use('/api', assignedTaskRoutes);
 app.use('/api/progress', progressRoutes);
+app.use('/api/certificate', certificateRoutes);
+app.use('/api/certificates', certificateRoutes);
+app.use('/api/progress', progressRoutes);
 
-// Test and Health Routes
+
+
+// Home route
 app.get('/', (req, res) => {
-  console.log('🏠 Home route accessed');
   res.json({ 
     message: '🌐 E-learning backend is running...',
     timestamp: new Date().toISOString(),
     endpoints: [
-      'GET /',
       'GET /health',
-      'GET /test',
       'POST /api/auth/register',
       'POST /api/auth/login',
-      'GET /api/admin/* (Admin routes with /admin prefix)',
-      'GET /api/* (Admin routes with direct /api prefix)',
-      'GET /api/assignedtasks (Available)',
-      'GET /api/assigned-courses (Available)',
-      'GET /api/employees (Available)'
+      'GET /api/admin/*',
+      'GET /api/courses/*',
+      'GET /api/employees/*',
+      'GET /api/assignedtasks',
+      'GET /api/certificates/:id'
     ]
   });
 });
 
+// Health check route
 app.get('/health', (req, res) => {
-  console.log('🏥 Health check accessed');
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
     database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
-    port: process.env.PORT || 5000,
-    availableRoutes: {
-      auth: '/api/auth/*',
-      admin: ['/api/admin/*', '/api/*'],
-      courses: '/api/courses/*',
-      assignedTasks: '/api/assignedtasks',
-      assignedCourses: '/api/assigned-courses'
-    }
+    port: process.env.PORT || 5000
   });
 });
 
-app.get('/test', (req, res) => {
-  console.log('🧪 Test route accessed');
-  res.json({ message: 'Test route working!', timestamp: new Date().toISOString() });
-});
-
-// Error Handling
-app.use((req, res, next) => {
-  console.log('❌ 404 - Route not found:', req.method, req.originalUrl);
+// 404 Not Found handler
+app.use((req, res) => {
   res.status(404).json({ 
     error: 'Route not found',
     method: req.method,
     path: req.originalUrl,
-    timestamp: new Date().toISOString(),
-    availableRoutes: [
-      'GET /api/assignedtasks',
-      'GET /api/assigned-courses', 
-      'GET /api/employees',
-      'GET /api/admin/assignedtasks',
-      'POST /api/auth/login',
-      'POST /api/auth/register'
-    ]
+    timestamp: new Date().toISOString()
   });
 });
 
+// 500 Internal Server Error handler
 app.use((err, req, res, next) => {
   console.error('💥 Unexpected error:', err);
   res.status(500).json({ 
@@ -151,19 +136,24 @@ app.use((err, req, res, next) => {
 
 // Start server
 const PORT = process.env.PORT || 5000;
-
 const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📋 Available routes:`);
-  console.log(`   - GET /api/assignedtasks ✅`);
-  console.log(`   - GET /api/assigned-courses ✅`);
-  console.log(`   - GET /api/employees ✅`);
-  console.log(`   - GET /api/admin/assignedtasks ✅`);
-  console.log(`   - POST /api/auth/login ✅`);
-  console.log(`   - POST /api/auth/register ✅`);
-  console.log(`   - GET /health ✅`);
-  console.log(`   - GET /test ✅`);
 });
+
+// Example using Express.js
+app.get('/api/certificates/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const certificate = await Certificate.findOne({ employeeId: id });
+    if (!certificate) {
+      return res.status(404).json({ message: 'Certificate not found' });
+    }
+    res.json(certificate);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 
 // Graceful shutdown
 process.on('SIGINT', async () => {

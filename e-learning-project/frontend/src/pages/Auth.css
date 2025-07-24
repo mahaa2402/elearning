@@ -58,6 +58,14 @@
   cursor: pointer;
   transition: background 0.3s ease, transform 0.2s;
 }
+/* Add this to the bottom of your Auth.css or inside your existing styles */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  gap: 6px; /* 👈 this adds the gap between label and input */
+}
+
 
 .auth-container button:hover {
   background: linear-gradient(to right, #0056b3, #003e8a);

@@ -1,0 +1,59 @@
+const UserProgress = require('../models/Userprogress');
+
+// Save progress after a quiz is completed
+const saveQuizProgress = async (req, res) => {
+  try {
+    // Accept userEmail and courseName for flexibility
+    const userEmail = req.body.userEmail || req.user.email;
+    const courseName = req.body.courseName;
+    const completedModules = req.body.completedModules || [];
+    const lastAccessedModule = req.body.lastAccessedModule;
+
+    if (!userEmail || !courseName || !lastAccessedModule) {
+      return res.status(400).json({ success: false, message: 'userEmail, courseName, and lastAccessedModule are required' });
+    }
+
+    let progress = await UserProgress.findOne({ userEmail, courseName });
+
+    if (!progress) {
+      progress = new UserProgress({
+        userEmail,
+        courseName,
+        completedModules: completedModules.length > 0 ? completedModules : [{ m_id: lastAccessedModule, completedAt: new Date() }],
+        lastAccessedModule
+      });
+    } else {
+      // Add to completedModules if not already present
+      const alreadyCompleted = progress.completedModules.some(mod => mod.m_id === lastAccessedModule);
+      if (!alreadyCompleted) {
+        progress.completedModules.push({ m_id: lastAccessedModule, completedAt: new Date() });
+      }
+      progress.lastAccessedModule = lastAccessedModule;
+    }
+
+    await progress.save();
+    res.status(200).json({ success: true, progress });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to save progress', error: error.message });
+  }
+};
+
+// Get progress (used after login)
+const getUserProgress = async (req, res) => {
+  try {
+    const userEmail = req.query.userEmail || req.user.email;
+    const courseName = req.query.courseName;
+    if (!userEmail || !courseName) {
+      return res.status(400).json({ success: false, message: 'userEmail and courseName are required' });
+    }
+    const progress = await UserProgress.findOne({ userEmail, courseName });
+    res.status(200).json({ success: true, progress });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to fetch progress', error: error.message });
+  }
+};
+
+module.exports = {
+  saveQuizProgress,
+  getUserProgress
+};

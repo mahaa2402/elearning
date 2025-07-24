@@ -1,133 +1,70 @@
 import React, { useState } from 'react';
 import './quiz.css';
+
 const email = localStorage.getItem("employeeEmail"); // stored at login
 const currentLevel = parseInt(localStorage.getItem("levelCleared")) || 0;
-const thisLesson = 4; // Set this based on current lesson
-
+const thisLesson = 2; // Set this based on current lesson
 
 const questions = [
   {
-    id: 1,
-    question: "What does ISP stand for?",
+ id: 1,
+    question: "Which of the following best defines an ISP?",
     options: [
-      { id: 'a', text: 'Internet Service Provider' },
-      { id: 'b', text: 'Internal Security Policy' },
-      { id: 'c', text: 'International Service Protocol' },
-      { id: 'd', text: 'Internet Secure Provider' },
-      { id: 'e', text: 'Information Security Provider' }
+      { id: 'a', text: 'A company that sells antivirus software' },
+      { id: 'b', text: 'A service that provides access to the internet' },
+      { id: 'c', text: 'A device used to connect LAN cables' },
+      { id: 'd', text: 'A protocol for securing email communication' },
+      { id: 'e', text: 'A type of network router' }
     ],
-    correctAnswer: 'a'
+    correctAnswer: 'b'
   },
   {
     id: 2,
-    question: "Which of the following is NOT a type of ISP connection?",
+    question: "Which of the following is a Tier 1 ISP characteristic?",
     options: [
-      { id: 'a', text: 'Dial-up' },
-      { id: 'b', text: 'Broadband' },
-      { id: 'c', text: 'Fiber Optic' },
-      { id: 'd', text: 'Bluetooth' },
-      { id: 'e', text: 'Satellite' }
-    ],
-    correctAnswer: 'd'
-  },
-  {
-    id: 3,
-    question: "What is a primary responsibility of an ISP?",
-    options: [
-      { id: 'a', text: 'Provide internet access' },
-      { id: 'b', text: 'Sell computers' },
-      { id: 'c', text: 'Manufacture routers' },
-      { id: 'd', text: 'Develop operating systems' },
-      { id: 'e', text: 'None of the above' }
+      { id: 'a', text: 'Connects directly to other Tier 1 networks without paying for transit' },
+      { id: 'b', text: 'Provides only local internet access' },
+      { id: 'c', text: 'Offers free internet services' },
+      { id: 'd', text: 'Only serves residential customers' },
+      { id: 'e', text: 'Operates only in one country' }
     ],
     correctAnswer: 'a'
   },
   {
+    id: 3,
+    question: "What type of internet connection uses existing telephone lines?",
+    options: [
+      { id: 'a', text: 'Fiber optic' },
+      { id: 'b', text: 'Cable' },
+      { id: 'c', text: 'DSL (Digital Subscriber Line)' },
+      { id: 'd', text: 'Satellite' },
+      { id: 'e', text: 'Wireless' }
+    ],
+    correctAnswer: 'c'
+  },
+  {
     id: 4,
-    question: "Which technology offers the fastest internet speeds?",
+    question: "Which internet technology provides the fastest and most reliable connection?",
     options: [
       { id: 'a', text: 'Dial-up' },
       { id: 'b', text: 'DSL' },
       { id: 'c', text: 'Cable' },
-      { id: 'd', text: 'Fiber Optic' },
+      { id: 'd', text: 'Fiber optic' },
       { id: 'e', text: 'Satellite' }
     ],
     correctAnswer: 'd'
   },
   {
     id: 5,
-    question: "What security service might an ISP offer?",
+    question: "What is the primary security responsibility of ISPs?",
     options: [
-      { id: 'a', text: 'Antivirus software' },
-      { id: 'b', text: 'Spam filtering' },
-      { id: 'c', text: 'Parental controls' },
-      { id: 'd', text: 'All of the above' },
-      { id: 'e', text: 'None of the above' }
+      { id: 'a', text: 'Providing free antivirus software' },
+      { id: 'b', text: 'Protecting network infrastructure from cyber attacks' },
+      { id: 'c', text: 'Monitoring all user activities' },
+      { id: 'd', text: 'Blocking all social media sites' },
+      { id: 'e', text: 'Providing unlimited bandwidth' }
     ],
-    correctAnswer: 'd'
-  }
-];
-
-const alternateQuestions = [
-  {
-    id: 1,
-    question: "Which of the following is a Tier 1 ISP responsibility?",
-    options: [
-      { id: 'a', text: 'Providing backbone internet connectivity' },
-      { id: 'b', text: 'Selling mobile phones' },
-      { id: 'c', text: 'Developing web browsers' },
-      { id: 'd', text: 'Manufacturing modems' },
-      { id: 'e', text: 'None of the above' }
-    ],
-    correctAnswer: 'a'
-  },
-  {
-    id: 2,
-    question: "Which technology is considered obsolete for internet access?",
-    options: [
-      { id: 'a', text: 'Fiber Optic' },
-      { id: 'b', text: 'Cable' },
-      { id: 'c', text: 'Dial-up' },
-      { id: 'd', text: 'DSL' },
-      { id: 'e', text: 'Satellite' }
-    ],
-    correctAnswer: 'c'
-  },
-  {
-    id: 3,
-    question: "What is a common bundled service with cable internet?",
-    options: [
-      { id: 'a', text: 'TV and phone' },
-      { id: 'b', text: 'Cloud storage' },
-      { id: 'c', text: 'Mobile apps' },
-      { id: 'd', text: 'Smart watches' },
-      { id: 'e', text: 'None of the above' }
-    ],
-    correctAnswer: 'a'
-  },
-  {
-    id: 4,
-    question: "Which is NOT a security responsibility of an ISP?",
-    options: [
-      { id: 'a', text: 'Preventing DDoS attacks' },
-      { id: 'b', text: 'Protecting customer data' },
-      { id: 'c', text: 'Selling groceries' },
-      { id: 'd', text: 'Offering parental controls' },
-      { id: 'e', text: 'Spam filtering' }
-    ],
-    correctAnswer: 'c'
-  },
-  {
-    id: 5,
-    question: "What is the fastest type of internet connection?",
-    options: [
-      { id: 'a', text: 'DSL' },
-      { id: 'b', text: 'Cable' },
-      { id: 'c', text: 'Fiber Optic' },
-      { id: 'd', text: 'Dial-up' },
-      { id: 'e', text: 'Satellite' }
-    ],
-    correctAnswer: 'c'
+    correctAnswer: 'b'
   }
 ];
 
@@ -135,16 +72,13 @@ const QuizLesson2 = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [showResults, setShowResults] = useState(false);
-  // Use alternate questions if retake flag is set
-  const isRetake = localStorage.getItem('quiz2Retake') === 'true';
-  const questionSet = isRetake ? alternateQuestions : questions;
 
   const handleAnswerSelect = (questionId, optionId) => {
     setSelectedAnswers(prev => ({ ...prev, [questionId]: optionId }));
   };
 
   const handleNext = () => {
-    if (currentQuestion < questionSet.length - 1) {
+    if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(prev => prev + 1);
     }
   };
@@ -155,53 +89,56 @@ const QuizLesson2 = () => {
     }
   };
 
-const handleSubmit = async () => {
-  setShowResults(true);
-  const score = calculateScore();
-  const passed = score / questions.length >= 0.5;
+  const handleSubmit = async () => {
+    setShowResults(true);
+    const score = calculateScore();
+    const passed = score / questions.length >= 0.5;
 
-  // Get auth token
-  const token = localStorage.getItem('authToken') || localStorage.getItem('token');
-  
-  try {
-    // Submit quiz progress to new endpoint
-    const response = await fetch("http://localhost:5000/api/progress/submit-quiz", {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        quizId: 2,
-        quizName: "ISP Quiz",
-        score: score,
-        totalQuestions: questions.length,
-        passed: passed
-      }),
-    });
+    // Get auth token
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    const userEmail = email; // from localStorage
+    const courseName = 'ISP Basics'; // or dynamic course/module name
+    const m_id = 'lesson2'; // or dynamic module/lesson ID
+    const completedAt = new Date().toISOString();
 
-    if (response.ok) {
-      const result = await response.json();
-      console.log('Quiz progress saved:', result);
-      
-      // Update local storage for backward compatibility
-      if (passed) {
-        let currentLevel = parseInt(localStorage.getItem("levelCleared")) || 0;
-        const updatedLevel = currentLevel + 1;
-        localStorage.setItem("levelCleared", updatedLevel);
+    try {
+      // Submit quiz progress to new endpoint
+      const response = await fetch("http://localhost:5000/api/progress/submit-quiz", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          userEmail,
+          courseName,
+          completedModules: [{ m_id, completedAt }],
+          lastAccessedModule: m_id
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Quiz progress saved:', result);
+        // Update local storage for backward compatibility
+        if (passed) {
+          localStorage.setItem('quiz2Passed', 'true');
+          let currentLevel = parseInt(localStorage.getItem("levelCleared")) || 0;
+          const updatedLevel = Math.max(currentLevel, 2);
+          localStorage.setItem("levelCleared", updatedLevel);
+        }
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to save quiz progress', errorData);
       }
-    } else {
-      console.error('Failed to save quiz progress');
+    } catch (error) {
+      console.error('Error saving quiz progress:', error);
     }
-  } catch (error) {
-    console.error('Error saving quiz progress:', error);
-  }
-};
-
+  };
 
   const calculateScore = () => {
     let correct = 0;
-    questionSet.forEach(q => {
+    questions.forEach(q => {
       if (selectedAnswers[q.id] === q.correctAnswer) correct++;
     });
     return correct;
@@ -215,17 +152,17 @@ const handleSubmit = async () => {
 
   if (showResults) {
     const score = calculateScore();
-    const percentage = (score / questionSet.length) * 100;
+    const percentage = (score / questions.length) * 100;
     const isPassed = percentage >= 50;
     return (
       <div className="results-container">
         <div className="results-card">
           <h1 className="results-title">Quiz Results</h1>
           <div className="score-display">
-            <div className="score-number">{score}/{questionSet.length}</div>
+            <div className="score-number">{score}/{questions.length}</div>
             <div className="score-percentage">Score: {percentage.toFixed(1)}%</div>
             <div className="score-message">
-              {isPassed ? 'Congratulations! You passed.' : 'Please try again.'}
+              {isPassed ? 'Congratulations! You passed the ISP Quiz!' : 'Please try again to pass the quiz.'}
             </div>
           </div>
           {!isPassed ? (
@@ -238,8 +175,8 @@ const handleSubmit = async () => {
     );
   }
 
-  const currentQuestionData = questionSet[currentQuestion];
-  const isLastQuestion = currentQuestion === questionSet.length - 1;
+  const currentQuestionData = questions[currentQuestion];
+  const isLastQuestion = currentQuestion === questions.length - 1;
 
   return (
     <div className="quiz-container">
