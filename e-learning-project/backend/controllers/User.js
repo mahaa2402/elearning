@@ -1,6 +1,7 @@
-const User = require('../models/User'); // Adjust path according to your User model location
+//const User = require('../models/User'); // Adjust path according to your User model location
 const jwt = require('jsonwebtoken');
-const Quiz = require('../models/Quiz'); // path depends on your folder structure
+const Quiz = require('../models/Quiz');
+const Common_Course=require('../models/common_courses') // path depends on your folder structure
 
 
 // Get user profile
@@ -183,10 +184,35 @@ const getQuizTitles = async (req, res) => {
 };
 
 
+
+//used in course detail page to show page 
+const getcourse=async (req, res) => {
+  try {
+    const { title } = req.body;
+
+    if (!title) {
+      return res.status(400).json({ message: 'Title is required' });
+    }
+
+    const course = await Common_Course.findByTitle(title);
+
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+
+    res.status(200).json(course);
+  } catch (error) {
+    console.error('Error fetching course by title:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
 module.exports = {
   getUserProfile,
   updateUserProfile,
   getUserStats,
   changePassword,
-  getQuizTitles
+  getQuizTitles,
+  getcourse
 };

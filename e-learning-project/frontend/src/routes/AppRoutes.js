@@ -45,7 +45,7 @@ function AppRoutes() {
         <Route path="/employeetracking" element={<EmployeeTracking />} />
          <Route path="/userdashboard" element={<UserDashboard />} />
          <Route path="/lesson1" element={<Lesson1 />} />
-        <Route path="/coursedetailpage" element={<CourseDetailPage />} />
+        <Route path="/coursedetailpage/:title" element={<CourseDetailPage />} />
         <Route path="/certificate" element={<CertificatePage />} />
          
          <Route path="/coursemodules" element={<CourseModules />} />
