@@ -53,7 +53,7 @@ const CourseAdminDashboard = () => {
   const fetchCourses = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/courses`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/courses`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }
@@ -75,7 +75,7 @@ const CourseAdminDashboard = () => {
         throw new Error('Invalid data format: Expected an array');
       }
     } catch (err) {
-      setError(`Error fetching courses: ${err.message}`);
+      setError(`Error fetching mahaaa courses: ${err.message}`);
       setCourses([]);
     } finally {
       setIsLoading(false);
@@ -181,13 +181,13 @@ const CourseAdminDashboard = () => {
       };
 
       if (editingCourse) {
-        response = await fetch(`${API_BASE_URL}/api/courses/${editingCourse._id}`, {
+        response = await fetch(`${API_BASE_URL}/api/admin/courses/${editingCourse._id}`, {
           method: 'PUT',
           headers,
           body: JSON.stringify(courseData)
         });
       } else {
-        response = await fetch(`${API_BASE_URL}/api/courses`, {
+        response = await fetch(`${API_BASE_URL}/api/admin/courses`, {
           method: 'POST',
           headers,
           body: JSON.stringify(courseData)
@@ -212,7 +212,7 @@ const CourseAdminDashboard = () => {
   const handleDelete = async (courseId) => {
     if (window.confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/courses/${courseId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/admin/courses/${courseId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('authToken')}`

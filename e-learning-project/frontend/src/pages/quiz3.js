@@ -101,7 +101,7 @@ const handleSubmit = async () => {
   const courseName = 'ISP Basics'; // or dynamic course/module name
   const m_id = 'lesson3'; // or dynamic module/lesson ID
   const completedAt = new Date().toISOString();
-
+  
   try {
     // Submit quiz progress to new endpoint
     const response = await fetch("http://localhost:5000/api/progress/submit-quiz", {
