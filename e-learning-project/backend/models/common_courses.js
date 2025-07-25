@@ -33,6 +33,12 @@ courseSchema.statics.getCourseInfoWithoutModules = async function () {
   return courses;
 };
 
+courseSchema.statics.findByTitle = async function(title) {
+  return await this.findOne({ title });
+};
+
+
+
 const Common_Course = mongoose.model('CommonCourse', courseSchema);
 
 module.exports = Common_Course;

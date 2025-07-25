@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Common_Course = require('../models/common_courses');
+const {getcourse}=require('../controllers/User')
 
 // GET /api/courses - Get all courses
 router.get('/', async (req, res) => {
@@ -33,6 +34,8 @@ router.get('/getcourse', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+router.post('/getcoursedetailpage',getcourse)
 
 
 
