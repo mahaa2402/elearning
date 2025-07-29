@@ -1,0 +1,108 @@
+.lesson-container {
+  display: flex;
+  padding: 1rem;
+  gap: 2rem;
+  background: #f9f9f9;
+  min-height: 100vh;
+}
+
+.lesson-content {
+  flex: 3;
+  background: white;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  box-shadow: 0 0 5px #ccc;
+}
+
+.lesson-sidebar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.sidebar-section {
+  background: #fff;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 0 5px #ccc;
+}
+
+.lesson-button,
+.quiz-button {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  background: #f3f3f3;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  margin: 0.3rem 0;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.lesson-button.active,
+.quiz-button.active {
+  background-color: #e0f0ff;
+  color: #007bff;
+  font-weight: bold;
+}
+
+.lesson-button:disabled,
+.quiz-button:disabled {
+  color: #999;
+  background-color: #eee;
+  cursor: not-allowed;
+}
+
+.duration {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.progress-text {
+  font-size: 0.9rem;
+  color: #777;
+  margin: 0.5rem 0;
+}
+
+.lesson-paragraphs {
+  margin-top: 1rem;
+}
+.lesson-wrapper {
+  background-color: #f9f9f9;
+  min-height: 100vh;
+}
+
+.top-bar {
+  background-color: #f59e0b; /* orange-500 */
+  color: white;
+  padding: 1.2rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.top-bar h3 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.top-bar h3 span {
+  color: #fff3cd; /* light yellowish for emphasis */
+}
+
+.subtitle {
+  font-size: 1rem;
+  font-weight: normal;
+  margin-top: 0.3rem;
+  color: #fff;
+}
+
+.duration-text {
+  font-size: 1rem;
+  font-weight: bold;
+}
