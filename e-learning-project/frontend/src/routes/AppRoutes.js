@@ -27,6 +27,10 @@ import TaskDetailPage from '../pages/taskdetailpage';
 import CertificatePage from '../pages/certificate';
 import CertificateDetails from '../pages/certificatedetail';
 
+import LessonPage from "../pages/lessonpage";
+
+
+
 
 
 
@@ -59,7 +63,7 @@ function AppRoutes() {
         <Route path="/taskdetailpage" element={<TaskDetailPage />} />
 
         <Route path="/certificatedetail/:id" element={<CertificateDetails />} />
-        
+         <Route path="/course/:courseId/lesson/:lessonId" element={<LessonPage />} />
         {/* Add more routes as needed */}
           
 
