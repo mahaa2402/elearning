@@ -4,9 +4,9 @@ const courseData = {
     lessons: {
       1: {
         title: "Introduction to Information Security & Data Protection",
-        videoUrl: "/videos/c1l1.mp4",
+        videoUrl: "/Module 1_Course_1.mp4",
         content: [
-          "What is Information Security?",
+          "What is Information Securitsy?",
           "Security revolves around confidentiality, availability, and integrity of data.",
           "Everyone is responsible for protecting information — company data, personal data, systems, communication, etc.",
           "Basic Responsibilities:",

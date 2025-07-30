@@ -61,8 +61,8 @@ function LessonPage() {
               <button
                 key={id}
                 className={`quiz-button ${id === lessonId ? 'active' : ''}`}
-                disabled={parseInt(id) > parseInt(lessonId)}
-              >
+                disabled={parseInt(id) > parseInt(lessonId)}>
+                  
                 Quiz {id}: {l.title.split(' ').slice(0, 2).join(' ')}...
               </button>
             ))}
