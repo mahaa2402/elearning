@@ -56,7 +56,7 @@ function AppRoutes() {
         <Route path="/lesson2" element={<Lesson2 />} />
         <Route path="/lesson3" element={<Lesson3 />} />
         <Route path="/lesson4" element={<Lesson4 />} /> 
-        <Route path="/quiz" element={<Quiz />} />
+        <Route path="/quiz/:mo_id" element={<Quiz />} />
         <Route path="/quiz2" element={<QuizLesson2 />} />
         <Route path="/quiz3" element={<QuizLesson3 />} />
         <Route path="/quiz4" element={<QuizLesson4 />} />

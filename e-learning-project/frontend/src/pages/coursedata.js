@@ -1,5 +1,5 @@
 const courseData = {
-  1: {
+  "68789a19935761547602aef3": {
     name: "ISP",
     lessons: {
       1: {
@@ -44,7 +44,7 @@ const courseData = {
       }
     }
   },
-  2: {
+  "68789a19935761547602aef1": {
     name: "posh",
     lessons: {
       1: {
@@ -79,7 +79,7 @@ const courseData = {
       }
     }
   },
-  3: {
+  "68885822d486bba2975cdca2": {
     name: "GDPR",
     lessons: {
       1: {
@@ -123,7 +123,7 @@ const courseData = {
       }
     }
   },
-  4: {
+  "68885a71d486bba2975cdca4": {
     name: "Factory Act, Regulations & Productivity Tools",
     lessons: {
       1: {
@@ -164,7 +164,7 @@ const courseData = {
       }
     }
     },
-  5: {
+  "68885c86d486bba2975cdca6": {
     name: "Welding, CNC, Fitting Skills",
     lessons: {
       1: {
@@ -205,7 +205,7 @@ const courseData = {
       }
     }
   },
-6: {
+"68885cf5d486bba2975cdca8": {
   id: "68789a19935761547602b400",
   _id: "68885cf5d486bba2975cdca8",
   name: "Office Tools (MS Excel, Docs)",

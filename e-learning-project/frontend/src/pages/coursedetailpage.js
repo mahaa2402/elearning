@@ -7,6 +7,7 @@ import staticCourseData from './coursedata'; // Renamed to avoid confusion
 const CourseDetailPage = () => {
   const [courseData, setCourseData] = useState(null);
   const { title } = useParams();
+  console.log("just foir fun",title)
   const navigate = useNavigate();
 
   useEffect(() => {

@@ -6,6 +6,7 @@ import './lessonpage.css';
 function LessonPage() {
   const { courseId, lessonId } = useParams();
   const navigate = useNavigate();
+  console.log("lesson id is comin from sarva",lessonId)
   const course = courseData[courseId];
   const lesson = course?.lessons[lessonId];
 
@@ -38,7 +39,7 @@ function LessonPage() {
           </div>
         </div>
 
-        {/* RIGHT: Sidebar */}
+        {/* RIGHT: Sidebar   - need to fetch from user progress after quiz completion/////////////////////////// */}
         <div className="lesson-sidebar">
           <div className="sidebar-section">
             <h4>Courses</h4>
