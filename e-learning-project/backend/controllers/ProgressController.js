@@ -1,4 +1,5 @@
 const UserProgress = require('../models/Userprogress');
+const { updateCourseProgress } = require('../commonUserProgressManager');
 
 // Save progress after a quiz is completed
 const saveQuizProgress = async (req, res) => {
@@ -32,6 +33,14 @@ const saveQuizProgress = async (req, res) => {
     }
 
     await progress.save();
+
+    // Update common user progress if this is a common course
+    try {
+      await updateCourseProgress(userEmail, courseName);
+    } catch (error) {
+      console.log('⚠️ Could not update common course progress:', error.message);
+    }
+
     res.status(200).json({ success: true, progress });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to save progress', error: error.message });

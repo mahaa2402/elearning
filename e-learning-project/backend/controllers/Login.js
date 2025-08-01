@@ -2,6 +2,7 @@ const Admin = require('../models/Admin');
 const Employee = require('../models/Employee');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { initializeEmployeeProgress } = require('../commonUserProgressManager');
 
 // Employee/Admin Login
 const login = async (req, res) => {
@@ -110,6 +111,14 @@ const register = async (req, res) => {
 
     const savedEmployee = await employee.save();
     console.log('✅ Employee registered:', savedEmployee.email);
+
+    // Initialize common user progress for the newly registered employee
+    try {
+      await initializeEmployeeProgress(savedEmployee.email);
+      console.log('✅ Initialized progress for newly registered employee:', savedEmployee.email);
+    } catch (error) {
+      console.log('⚠️ Could not initialize employee progress:', error.message);
+    }
 
     res.status(201).json({
       success: true,
