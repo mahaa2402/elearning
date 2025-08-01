@@ -47,6 +47,7 @@ const CourseDetailPage = () => {
     
     if (foundCourseId) {
       // Navigate to coursedetailpage/[courseId]/MODULE/1
+      console.log("sab",foundCourseId)
       navigate(`/course/${foundCourseId}/lesson/1`);
     } else {
       console.error('Course not found in static data');
