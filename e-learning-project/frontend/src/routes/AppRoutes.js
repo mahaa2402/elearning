@@ -24,6 +24,8 @@ import QuizLesson2 from '../pages/quiz2';
 import QuizLesson3 from '../pages/quiz3';
 import QuizLesson4 from '../pages/quiz4';
 import TaskDetailPage from '../pages/taskdetailpage';
+import TaskModulePage from '../pages/taskmodulepage';
+import AssignedQuizPage from '../pages/assignedquizpage';
 import CertificatePage from '../pages/certificate';
 import CertificateDetails from '../pages/certificatedetail';
 
@@ -61,6 +63,8 @@ function AppRoutes() {
         <Route path="/quiz3" element={<QuizLesson3 />} />
         <Route path="/quiz4" element={<QuizLesson4 />} />
         <Route path="/taskdetailpage" element={<TaskDetailPage />} />
+        <Route path="/taskmodulepage" element={<TaskModulePage />} />
+        <Route path="/assignedquizpage" element={<AssignedQuizPage />} />
 
         <Route path="/certificatedetail/:id" element={<CertificateDetails />} />
          <Route path="/course/:courseId/lesson/:lessonId" element={<LessonPage />} />

@@ -87,12 +87,11 @@ const createAssignedTask = async (req, res) => {
       });
     }
 
-    const { taskTitle, description, module, priority, deadline, estimatedHours, reminderDays, assignees, videos, quizzes } = req.body;
+    const { taskTitle, description, priority, deadline, reminderDays, assignees, videos, quizzes } = req.body;
 
     const missingFields = [];
     if (!taskTitle) missingFields.push('taskTitle');
     if (!description) missingFields.push('description');  
-    if (!module) missingFields.push('module');
     if (!deadline) missingFields.push('deadline');
     if (!assignees || !Array.isArray(assignees) || assignees.length === 0) {
       missingFields.push('assignees');
@@ -179,10 +178,8 @@ const createAssignedTask = async (req, res) => {
     const assignedTask = new AssignedTask({
       taskTitle,
       description,
-      module,
       priority: priority || 'medium',
       deadline: deadlineDate,
-      estimatedHours: estimatedHours ? parseFloat(estimatedHours) : undefined,
       reminderDays: reminderDays ? parseInt(reminderDays) : 3,
       assignedBy: {
         adminId: admin._id,
@@ -195,7 +192,28 @@ const createAssignedTask = async (req, res) => {
       quizzes: quizzes || []
     });
 
+    console.log('=== SAVING TASK ===');
+    console.log('Task object before save:', JSON.stringify(assignedTask, null, 2));
+    
     const savedTask = await assignedTask.save();
+    
+    console.log('=== TASK SAVED SUCCESSFULLY ===');
+    console.log('Saved task ID:', savedTask._id);
+    console.log('Saved task:', JSON.stringify(savedTask, null, 2));
+    
+    // Debug: Check database connection and collection
+    console.log('=== DATABASE DEBUG ===');
+    console.log('Database name:', mongoose.connection.db.databaseName);
+    console.log('Collection name:', AssignedTask.collection.name);
+    
+    // Verify the task was actually saved by querying it back
+    const verifyTask = await AssignedTask.findById(savedTask._id);
+    console.log('Verification query result:', verifyTask ? 'Task found' : 'Task NOT found');
+    
+    // Count total tasks in collection
+    const totalTasks = await AssignedTask.countDocuments();
+    console.log('Total tasks in collection:', totalTasks);
+    
     res.status(201).json({ 
       success: true, 
       message: 'Task assigned successfully', 
@@ -212,6 +230,7 @@ const createAssignedTask = async (req, res) => {
 
 const getAssignedTasks = async (req, res) => {
   try {
+    console.log('=== FETCHING ASSIGNED TASKS ===');
     const { status, priority, assignedBy, assignedTo, page = 1, limit = 10 } = req.query;
     let filter = {};
     if (status) filter.status = status;
@@ -221,6 +240,9 @@ const getAssignedTasks = async (req, res) => {
     if (req.user.role === 'employee') {
       filter['assignees.employeeId'] = req.user.id;
     }
+    
+    console.log('Filter:', JSON.stringify(filter, null, 2));
+    
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const tasks = await AssignedTask.find(filter)
       .populate('assignees.employeeId', 'name email department')
@@ -228,7 +250,13 @@ const getAssignedTasks = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));
+      
+    console.log('Found tasks:', tasks.length);
+    console.log('Tasks:', JSON.stringify(tasks, null, 2));
+    
     const totalTasks = await AssignedTask.countDocuments(filter);
+    console.log('Total tasks in database:', totalTasks);
+    
     res.json({
       tasks,
       pagination: {
@@ -331,6 +359,39 @@ const deleteAssignedTask = async (req, res) => {
   }
 };
 
+const getAllTasksDebug = async (req, res) => {
+  try {
+    console.log('=== DEBUG: GETTING ALL TASKS ===');
+    
+    // Get database info
+    const dbName = mongoose.connection.db.databaseName;
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    console.log('Database name:', dbName);
+    console.log('All collections:', collections.map(c => c.name));
+    
+    const allTasks = await AssignedTask.find({}).sort({ createdAt: -1 });
+    console.log('All tasks in database:', allTasks.length);
+    console.log('All tasks:', JSON.stringify(allTasks, null, 2));
+    
+    // Also check if there are tasks in other collections
+    const allCollections = collections.map(c => c.name);
+    const taskCollections = allCollections.filter(name => name.toLowerCase().includes('task'));
+    console.log('Collections that might contain tasks:', taskCollections);
+    
+    res.json({
+      success: true,
+      databaseName: dbName,
+      collections: allCollections,
+      taskCollections: taskCollections,
+      totalTasks: allTasks.length,
+      tasks: allTasks
+    });
+  } catch (err) {
+    console.error('Error fetching all tasks:', err);
+    res.status(500).json({ error: 'Failed to fetch all tasks', message: err.message });
+  }
+};
+
 const getAssignedTasksStats = async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
@@ -418,6 +479,36 @@ const getCourseById = async (req, res) => {
     res.json(course);
   } catch (err) {
     console.error('Error fetching course:', err);
+    res.status(500).json({ error: 'Failed to get course', message: err.message });
+  }
+};
+
+const getCourseByName = async (req, res) => {
+  try {
+    const { courseName } = req.params;
+    if (!courseName) {
+      return res.status(400).json({ error: 'Course name is required' });
+    }
+    
+    console.log('=== FETCHING COURSE BY NAME ===');
+    console.log('Course name:', courseName);
+    
+    const course = await Course.findOne({ name: courseName });
+    console.log('Found course:', course ? 'Yes' : 'No');
+    
+    if (!course) {
+      return res.status(404).json({ 
+        error: 'Course not found', 
+        message: `No course found with name: ${courseName}` 
+      });
+    }
+    
+    res.json({
+      success: true,
+      course: course
+    });
+  } catch (err) {
+    console.error('Error fetching course by name:', err);
     res.status(500).json({ error: 'Failed to get course', message: err.message });
   }
 };
@@ -664,10 +755,12 @@ module.exports = {
   getAssignedTaskById,
   updateAssignedTaskProgress,
   deleteAssignedTask,
+  getAllTasksDebug,
   getAssignedTasksStats,
   createCourse,
   getCourses,
   getCourseById,
+  getCourseByName,
   updateCourse,
   deleteCourse,
   getAssignedCourses,

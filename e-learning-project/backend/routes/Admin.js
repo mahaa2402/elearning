@@ -2,26 +2,28 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/Admin');
-const {
-   getEmployees,
-   getEmployeesForAssignment,
-   verifyToken,
-   createAssignedTask,
-   getAssignedTasks,
-   getAssignedTaskById,
-   updateAssignedTaskProgress,
-   deleteAssignedTask,
-   getAssignedTasksStats,
-   createCourse,
-   getCourses,
-   getCourseById,
-   updateCourse,
-   deleteCourse,
-   getAssignedCourses,
-   getAvailableCourses,
-   assignTaskByEmail,
-   getAssignedTasksForUser,
-   startAssignedTask
+const { 
+  getEmployees, 
+  getEmployeesForAssignment, 
+  verifyToken, 
+  createAssignedTask, 
+  getAssignedTasks, 
+  getAssignedTaskById, 
+  updateAssignedTaskProgress, 
+  deleteAssignedTask, 
+  getAllTasksDebug,
+  getAssignedTasksStats,
+  createCourse,
+  getCourses,
+  getCourseById,
+  getCourseByName,
+  updateCourse,
+  deleteCourse,
+  getAssignedCourses,
+  getAvailableCourses,
+  assignTaskByEmail,
+  getAssignedTasksForUser,
+  startAssignedTask
 } = require('../controllers/Admin');
 const { authenticateToken } = require('../middleware/auth'); // Assuming you have this middleware
 
@@ -38,6 +40,7 @@ router.get('/employees-for-assignment', authenticateToken, getEmployeesForAssign
 // Main assigned tasks routes
 router.post('/assigned-tasks', authenticateToken, createAssignedTask);
 router.get('/assigned-tasks', authenticateToken, getAssignedTasks);
+router.get('/debug/all-tasks', authenticateToken, getAllTasksDebug);
 router.get('/assigned-tasks/stats/dashboard', authenticateToken, getAssignedTasksStats);
 router.get('/assigned-tasks/:id', authenticateToken, getAssignedTaskById);
 router.put('/assigned-tasks/:id/progress', authenticateToken, updateAssignedTaskProgress);
@@ -58,6 +61,7 @@ router.post('/assign-task-email', authenticateToken, assignTaskByEmail); // Alte
 router.post('/courses', authenticateToken, createCourse);
 router.get('/courses', authenticateToken, getCourses);
 router.get('/courses/:id', authenticateToken, getCourseById);
+router.get('/courses/name/:courseName', authenticateToken, getCourseByName);
 router.put('/courses/:id', authenticateToken, updateCourse);
 router.delete('/courses/:id', authenticateToken, deleteCourse);
 

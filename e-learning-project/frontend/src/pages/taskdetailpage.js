@@ -1,13 +1,14 @@
 // frontend/src/pages/taskdetailpage.js
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { AlertCircle, Calendar, Clock, User, ChevronLeft, Play, FileText } from 'lucide-react';
+import { AlertCircle, Calendar, Clock, User, ChevronLeft, Play, FileText, BookOpen, Award } from 'lucide-react';
 import './taskdetail.css';
 
 const TaskDetailPage = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
   const [task, setTask] = useState(state?.task || null);
+  const [courseDetails, setCourseDetails] = useState(null);
   const [videos, setVideos] = useState([]);
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -89,9 +90,50 @@ const TaskDetailPage = () => {
     }
   };
 
+  const fetchCourseDetails = async (taskTitle) => {
+    if (!taskTitle) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('Authentication token not found');
+        return;
+      }
+
+      console.log('Fetching course details for task title:', taskTitle);
+      
+      const response = await fetch(`http://localhost:5000/api/admin/courses/name/${encodeURIComponent(taskTitle)}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        method: 'GET',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Course details fetched:', data.course);
+        setCourseDetails(data.course);
+      } else if (response.status === 404) {
+        console.log('No course found for task title:', taskTitle);
+        setCourseDetails(null);
+      } else {
+        console.error('Failed to fetch course details:', response.status);
+      }
+    } catch (error) {
+      console.error('Error fetching course details:', error);
+    }
+  };
+
   useEffect(() => {
     fetchTaskDetails();
   }, []);
+
+  useEffect(() => {
+    if (task?.taskTitle) {
+      fetchCourseDetails(task.taskTitle);
+    }
+  }, [task?.taskTitle]);
 
   const isOverdue = (deadline) => {
     return new Date(deadline) < new Date() && new Date().getTime() - new Date(deadline).getTime() > 0;
@@ -124,109 +166,296 @@ const TaskDetailPage = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="task-detail-page">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p className="loading-text">Loading task details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="task-detail-page">
+        <div className="error-state">
+          <AlertCircle className="error-icon" />
+          <p className="error-text">Error: {error}</p>
+          <button className="task-detail-btn task-detail-btn-primary" onClick={fetchTaskDetails}>Retry</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!task) {
+    return (
+      <div className="task-detail-page">
+        <div className="empty-state">
+          <AlertCircle className="empty-state-icon" />
+          <p className="empty-state-text">No task data available.</p>
+          <button className="task-detail-btn task-detail-btn-secondary" onClick={() => navigate(-1)}>Back to Dashboard</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="task-detail-page">
-      <header className="task-header">
-        <button className="back-btn" onClick={() => navigate(-1)}>
-          <ChevronLeft className="back-icon" />
-          Back to Dashboard
-        </button>
-        <h1 className="task-title">{task?.taskTitle || 'Task Details'}</h1>
+      {/* Header */}
+      <header className="task-detail-header">
+        <div className="task-detail-header-container">
+          <div className="task-detail-header-content">
+            <div className="task-detail-logo-section">
+              <div className="task-detail-logo">VISTA</div>
+              <div className="task-detail-logo-subtitle">InnovativeLearning</div>
+            </div>
+            <nav className="task-detail-nav">
+              <button className="task-detail-nav-link" onClick={() => navigate('/dashboard')}>Dashboard</button>
+              <button className="task-detail-nav-link active">Task Details</button>
+              <button className="task-detail-nav-link" onClick={() => navigate('/profile')}>Profile</button>
+            </nav>
+            <div className="task-detail-header-actions">
+              <button 
+                className="task-detail-btn task-detail-btn-secondary"
+                onClick={() => navigate(-1)}
+              >
+                <ChevronLeft className="task-detail-btn-icon" />
+                Back
+              </button>
+            </div>
+          </div>
+        </div>
       </header>
 
-      <main className="task-content">
-        {loading ? (
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-            <p className="loading-text">Loading task details...</p>
-          </div>
-        ) : error ? (
-          <div className="error-state">
-            <AlertCircle className="error-icon" />
-            <p className="error-text">Error: {error}</p>
-            <button className="btn btn-retry" onClick={fetchTaskDetails}>Retry</button>
-          </div>
-        ) : !task ? (
-          <div className="empty-state">
-            <AlertCircle className="empty-state-icon" />
-            <p className="empty-state-text">No task data available.</p>
-            <button className="btn btn-back" onClick={() => navigate(-1)}>Back to Dashboard</button>
-          </div>
-        ) : (
-          <>
-            <section className="task-info-section">
-              <h2 className="section-title">Task Information</h2>
-              <div className="task-info-grid">
-                <div className="info-item">
-                  <label className="info-label">Task Title</label>
-                  <p className="info-value">{task.taskTitle}</p>
+      {/* Hero Section */}
+      <section className="task-detail-hero">
+        <div className="task-detail-hero-container">
+          <div className="task-detail-hero-content">
+            <div className="task-detail-info">
+              <div className="task-detail-category">
+                {task.priority?.toUpperCase()} PRIORITY
+              </div>
+              <h1 className="task-detail-title">{task.taskTitle}</h1>
+              <p className="task-detail-description">
+                {task.description || 'Complete this assigned task to enhance your learning experience.'}
+              </p>
+
+              <div className="task-detail-stats">
+                <div className="task-detail-stat-item">
+                  <Calendar className="task-detail-stat-icon" />
+                  <span>Assigned: {new Date(task.createdAt).toLocaleDateString()}</span>
                 </div>
-                <div className="info-item">
-                  <label className="info-label">Module</label>
-                  <p className="info-value">{task.module}</p>
+                <div className="task-detail-stat-item">
+                  <Clock className="task-detail-stat-icon" />
+                  <span>
+                    {isOverdue(task.deadline) 
+                      ? 'OVERDUE' 
+                      : getDaysRemaining(task.deadline) === 0 
+                        ? 'Due Today' 
+                        : `${getDaysRemaining(task.deadline)} days left`}
+                  </span>
                 </div>
-                <div className="info-item">
-                  <label className="info-label">Assigned By</label>
-                  <div className="instructor-info">
-                    <User className="instructor-icon" />
-                    <p className="info-value">{getAdminNameString(task.assignedBy)}</p>
-                  </div>
-                </div>
-                <div className="info-item">
-                  <label className="info-label">Assigned Date</label>
-                  <div className="date-info">
-                    <Calendar className="date-icon" />
-                    <p className="info-value">{new Date(task.createdAt).toLocaleDateString()}</p>
-                  </div>
-                </div>
-                <div className="info-item">
-                  <label className="info-label">Deadline</label>
-                  <div className="deadline-info">
-                    <Clock className="clock-icon" />
-                    <p className={`info-value ${isOverdue(task.deadline) ? 'overdue' : ''}`}>
-                      {new Date(task.deadline).toLocaleDateString()}
-                    </p>
-                    <p className={`days-remaining ${isOverdue(task.deadline) ? 'overdue' : getDaysRemaining(task.deadline) <= 3 ? 'urgent' : ''}`}>
-                      {isOverdue(task.deadline) ? 'OVERDUE' : getDaysRemaining(task.deadline) === 0 ? 'Due Today' : `${getDaysRemaining(task.deadline)} days left`}
-                    </p>
-                  </div>
-                </div>
-                <div className="info-item">
-                  <label className="info-label">Priority</label>
-                  <p className={`priority priority-${getPriorityColor(task.priority)}`}>
-                    {task.priority?.toUpperCase()}
-                  </p>
-                </div>
-                <div className="info-item">
-                  <label className="info-label">Status</label>
-                  <p className={`status-badge status-${getStatusColor(task.status?.toLowerCase())}`}>
-                    {task.status?.toUpperCase() || 'ACTIVE'}
-                  </p>
-                </div>
-                {task.description && (
-                  <div className="info-item description">
-                    <label className="info-label">Description</label>
-                    <p className="info-value">{task.description}</p>
+                {courseDetails && courseDetails.modules && (
+                  <div className="task-detail-stat-item">
+                    <BookOpen className="task-detail-stat-icon" />
+                    <span>{courseDetails.modules.length} Modules</span>
                   </div>
                 )}
-                <div className="info-item">
-                  <label className="info-label">Estimated Hours</label>
-                  <p className="info-value">{task.estimatedHours || 'N/A'}</p>
+              </div>
+
+              <div className="task-detail-instructor-info">
+                <div className="task-detail-instructor-avatar">
+                  <User className="task-detail-instructor-icon" />
                 </div>
-                <div className="info-item">
-                  <label className="info-label">Total Assignees</label>
-                  <p className="info-value">{task.totalAssignees || 0}</p>
-                </div>
-                <div className="info-item">
-                  <label className="info-label">Completed Count</label>
-                  <p className="info-value">{task.completedCount || 0}</p>
+                <div>
+                  <div className="task-detail-instructor-name">
+                    {getAdminNameString(task.assignedBy)}
+                  </div>
+                  <div className="task-detail-instructor-role">Task Administrator</div>
                 </div>
               </div>
-            </section>
 
-           </>
-        )}
-      </main>
+              <div className="task-detail-tags">
+                <span className="task-detail-tag">
+                  Due: {new Date(task.deadline).toLocaleDateString()}
+                </span>
+                <span className="task-detail-tag">
+                  Status: {task.status || 'Assigned'}
+                </span>
+              </div>
+            </div>
+
+            <div className="task-detail-thumbnail">
+              <img 
+                src={courseDetails?.thumbnail || "/api/placeholder/400/250"} 
+                alt={task.taskTitle} 
+              />
+              <div className="task-detail-play-overlay">
+                <Play className="task-detail-play-icon" />
+                <span>Start Task</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Progress Section */}
+      {courseDetails && courseDetails.modules && courseDetails.modules.length > 0 && (
+        <section className="task-detail-progress-section">
+          <div className="task-detail-progress-container">
+            <div className="task-detail-progress-steps">
+              <div className="task-detail-step active">
+                <div className="task-detail-step-number">1</div>
+                <div>
+                  <div className="task-detail-step-title">Review Content</div>
+                  <div className="task-detail-step-status">Start with course materials</div>
+                </div>
+              </div>
+              <div className="task-detail-step">
+                <div className="task-detail-step-number">2</div>
+                <div>
+                  <div className="task-detail-step-title">Complete Modules</div>
+                  <div className="task-detail-step-status">Work through all sections</div>
+                </div>
+              </div>
+              <div className="task-detail-step">
+                <div className="task-detail-step-number">3</div>
+                <div>
+                  <div className="task-detail-step-title">Submit Task</div>
+                  <div className="task-detail-step-status">Mark as completed</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Course Modules Section */}
+      {courseDetails && courseDetails.modules && courseDetails.modules.length > 0 && (
+        <section className="task-detail-outline-section">
+          <div className="task-detail-outline-container">
+            <h2 className="task-detail-section-title">Course Modules</h2>
+            <div className="task-detail-outline-list">
+              {courseDetails.modules.map((module, index) => (
+                <div key={index} className="task-detail-outline-item">
+                  <div className="task-detail-outline-header">
+                    <div className="task-detail-outline-number">{String(index + 1).padStart(2, '0')}</div>
+                    <div className="task-detail-outline-content">
+                      <h3 className="task-detail-outline-title">{module.title || `Module ${index + 1}`}</h3>
+                      <p className="task-detail-outline-description">
+                        {module.description || 'Complete this module to progress through the task.'}
+                      </p>
+                      <div className="task-detail-outline-meta">
+                        {module.video && module.video.title && (
+                          <span className="task-detail-outline-duration">
+                            <Play className="task-detail-meta-icon" />
+                            Video: {module.video.title}
+                          </span>
+                        )}
+                        {module.quiz && module.quiz.questions && module.quiz.questions.length > 0 && (
+                          <span className="task-detail-outline-duration">
+                            <FileText className="task-detail-meta-icon" />
+                            Quiz: {module.quiz.questions.length} questions
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="task-detail-outline-actions">
+                      <button 
+                        className="task-detail-btn task-detail-btn-start"
+                        onClick={() => navigate('/taskmodulepage', {
+                          state: {
+                            courseDetails: courseDetails,
+                            selectedModule: module
+                          }
+                        })}
+                      >
+                        <Play className="task-detail-btn-icon" />
+                        Start Module
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Course Information Section */}
+      {courseDetails && (
+        <section className="task-detail-info-section">
+          <div className="task-detail-info-container">
+            <h2 className="task-detail-section-title">Course Information</h2>
+            <div className="task-detail-info-grid">
+              <div className="task-detail-info-card">
+                <div className="task-detail-info-header">
+                  <BookOpen className="task-detail-info-icon" />
+                  <h3>Course Details</h3>
+                </div>
+                <div className="task-detail-info-content">
+                  <p><strong>Name:</strong> {courseDetails.name}</p>
+                  <p><strong>Category:</strong> {courseDetails.category || 'N/A'}</p>
+                  <p><strong>Duration:</strong> {courseDetails.duration || 'N/A'}</p>
+                  {courseDetails.description && (
+                    <p><strong>Description:</strong> {courseDetails.description}</p>
+                  )}
+                </div>
+              </div>
+              
+              <div className="task-detail-info-card">
+                <div className="task-detail-info-header">
+                  <Award className="task-detail-info-icon" />
+                  <h3>Task Requirements</h3>
+                </div>
+                <div className="task-detail-info-content">
+                  <p><strong>Priority:</strong> {task.priority?.toUpperCase()}</p>
+                  <p><strong>Deadline:</strong> {new Date(task.deadline).toLocaleDateString()}</p>
+                  <p><strong>Status:</strong> {task.status || 'Assigned'}</p>
+                  <p><strong>Assigned By:</strong> {getAdminNameString(task.assignedBy)}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Final CTA */}
+      <section className="task-detail-actions-section">
+        <div className="task-detail-actions-container">
+          <div className="task-detail-actions-content">
+            <div className="task-detail-actions-info">
+              <h3>Ready to complete your task?</h3>
+              <p>Start working through the course modules to complete this assigned task successfully.</p>
+            </div>
+            <div className="task-detail-actions-buttons">
+              {courseDetails && courseDetails.modules && courseDetails.modules.length > 0 && (
+                <button 
+                  className="task-detail-btn task-detail-btn-primary task-detail-btn-large"
+                  onClick={() => navigate('/taskmodulepage', {
+                    state: {
+                      courseDetails: courseDetails,
+                      selectedModule: courseDetails.modules[0]
+                    }
+                  })}
+                >
+                  <Play className="task-detail-btn-icon" />
+                  Start Task
+                </button>
+              )}
+              <button 
+                className="task-detail-btn task-detail-btn-outline task-detail-btn-large"
+                onClick={() => navigate(-1)}
+              >
+                <ChevronLeft className="task-detail-btn-icon" />
+                Back to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
