@@ -82,5 +82,34 @@ quizSchema.pre('save', async function (next) {
   next();
 });
 
+quizSchema.statics.getQuestionsByCourseAndModule = async function (courseId, moduleId) {
+  return this.findOne({ courseId, mo_id: moduleId }, { questions: 1, _id: 0 });
+};
+
+// New method to get questions in batches
+quizSchema.statics.getQuestionsByCourseAndModuleBatch = async function (courseId, moduleId, attemptNumber ) { //attemptnumber ==1 changeddd
+  const quiz = await this.findOne({ courseId, mo_id: moduleId }, { questions: 1, _id: 0 });
+  
+  if (!quiz || !quiz.questions) {
+    return null;
+  }
+
+  const questions = quiz.questions;
+  
+  // For first attempt, return first 5 questions
+  if (attemptNumber === 1) {
+    return { questions: questions.slice(0, 5) };
+  }
+  
+  // For retake (attempt 2), return next 5 questions (questions 6-10)
+  if (attemptNumber === 2) {
+    return { questions: questions.slice(5, 10) };
+  }
+  
+  // For any other attempt, return all questions
+  return { questions: questions };
+};
+
+
 const Quiz = mongoose.model('Quiz', quizSchema);
 module.exports = Quiz;

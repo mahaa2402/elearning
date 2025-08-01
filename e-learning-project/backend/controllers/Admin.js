@@ -3,6 +3,12 @@ const Admin = require('../models/Admin');
 const Employee = require('../models/Employee');
 const AssignedTask = require('../models/AssignedTask');
 const Course = require('../models/Course');
+// FIXED: Rename the imported functions to avoid conflicts
+const { 
+  assignCourseToEmployee: assignCourseToEmployeeManager, 
+  getEmployeeAssignedCourseProgress: getEmployeeAssignedCourseProgressManager, 
+  getAllEmployeesAssignedCourseProgress: getAllEmployeesAssignedCourseProgressManager 
+} = require('../assignedCourseUserProgressManager');
 const mongoose = require('mongoose');
 
 const getEmployees = async (req, res) => {
@@ -87,12 +93,11 @@ const createAssignedTask = async (req, res) => {
       });
     }
 
-    const { taskTitle, description, module, priority, deadline, estimatedHours, reminderDays, assignees, videos, quizzes } = req.body;
+    const { taskTitle, description, priority, deadline, reminderDays, assignees, videos, quizzes } = req.body;
 
     const missingFields = [];
     if (!taskTitle) missingFields.push('taskTitle');
     if (!description) missingFields.push('description');  
-    if (!module) missingFields.push('module');
     if (!deadline) missingFields.push('deadline');
     if (!assignees || !Array.isArray(assignees) || assignees.length === 0) {
       missingFields.push('assignees');
@@ -179,10 +184,8 @@ const createAssignedTask = async (req, res) => {
     const assignedTask = new AssignedTask({
       taskTitle,
       description,
-      module,
       priority: priority || 'medium',
       deadline: deadlineDate,
-      estimatedHours: estimatedHours ? parseFloat(estimatedHours) : undefined,
       reminderDays: reminderDays ? parseInt(reminderDays) : 3,
       assignedBy: {
         adminId: admin._id,
@@ -195,7 +198,56 @@ const createAssignedTask = async (req, res) => {
       quizzes: quizzes || []
     });
 
+    console.log('=== SAVING TASK ===');
+    console.log('Task object before save:', JSON.stringify(assignedTask, null, 2));
+    
     const savedTask = await assignedTask.save();
+    
+    console.log('=== TASK SAVED SUCCESSFULLY ===');
+    console.log('Saved task ID:', savedTask._id);
+    console.log('Saved task:', JSON.stringify(savedTask, null, 2));
+    
+    // Debug: Check database connection and collection
+    console.log('=== DATABASE DEBUG ===');
+    console.log('Database name:', mongoose.connection.db.databaseName);
+    console.log('Collection name:', AssignedTask.collection.name);
+    
+    // Verify the task was actually saved by querying it back
+    const verifyTask = await AssignedTask.findById(savedTask._id);
+    console.log('Verification query result:', verifyTask ? 'Task found' : 'Task NOT found');
+    
+    // Count total tasks in collection
+    const totalTasks = await AssignedTask.countDocuments();
+    console.log('Total tasks in collection:', totalTasks);
+    
+    // ============================================================================
+    // ADDITIONAL: Create assigned course progress entries
+    // ============================================================================
+    console.log('=== CREATING ASSIGNED COURSE PROGRESS ENTRIES ===');
+    
+    try {
+      // Treat taskTitle as course name and create assigned course progress for each employee
+      for (const employee of employees) {
+        console.log(`📝 Creating assigned course progress for: ${employee.name} (${employee.email}) - Course: ${taskTitle}`);
+        
+        const courseProgress = await assignCourseToEmployeeManager(
+          employee.email,
+          taskTitle, // Use taskTitle as course name
+          admin._id,
+          deadlineDate
+        );
+        
+        console.log(`✅ Created assigned course progress for ${employee.name}:`, courseProgress ? 'Success' : 'Failed');
+      }
+      
+      console.log('✅ All assigned course progress entries created successfully');
+      
+    } catch (courseError) {
+      console.error('❌ Error creating assigned course progress entries:', courseError);
+      // Don't fail the entire request if course progress creation fails
+      console.log('⚠️ Task assignment succeeded, but course progress creation failed');
+    }
+    
     res.status(201).json({ 
       success: true, 
       message: 'Task assigned successfully', 
@@ -212,6 +264,7 @@ const createAssignedTask = async (req, res) => {
 
 const getAssignedTasks = async (req, res) => {
   try {
+    console.log('=== FETCHING ASSIGNED TASKS ===');
     const { status, priority, assignedBy, assignedTo, page = 1, limit = 10 } = req.query;
     let filter = {};
     if (status) filter.status = status;
@@ -221,6 +274,9 @@ const getAssignedTasks = async (req, res) => {
     if (req.user.role === 'employee') {
       filter['assignees.employeeId'] = req.user.id;
     }
+    
+    console.log('Filter:', JSON.stringify(filter, null, 2));
+    
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const tasks = await AssignedTask.find(filter)
       .populate('assignees.employeeId', 'name email department')
@@ -228,7 +284,13 @@ const getAssignedTasks = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));
+      
+    console.log('Found tasks:', tasks.length);
+    console.log('Tasks:', JSON.stringify(tasks, null, 2));
+    
     const totalTasks = await AssignedTask.countDocuments(filter);
+    console.log('Total tasks in database:', totalTasks);
+    
     res.json({
       tasks,
       pagination: {
@@ -331,6 +393,39 @@ const deleteAssignedTask = async (req, res) => {
   }
 };
 
+const getAllTasksDebug = async (req, res) => {
+  try {
+    console.log('=== DEBUG: GETTING ALL TASKS ===');
+    
+    // Get database info
+    const dbName = mongoose.connection.db.databaseName;
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    console.log('Database name:', dbName);
+    console.log('All collections:', collections.map(c => c.name));
+    
+    const allTasks = await AssignedTask.find({}).sort({ createdAt: -1 });
+    console.log('All tasks in database:', allTasks.length);
+    console.log('All tasks:', JSON.stringify(allTasks, null, 2));
+    
+    // Also check if there are tasks in other collections
+    const allCollections = collections.map(c => c.name);
+    const taskCollections = allCollections.filter(name => name.toLowerCase().includes('task'));
+    console.log('Collections that might contain tasks:', taskCollections);
+    
+    res.json({
+      success: true,
+      databaseName: dbName,
+      collections: allCollections,
+      taskCollections: taskCollections,
+      totalTasks: allTasks.length,
+      tasks: allTasks
+    });
+  } catch (err) {
+    console.error('Error fetching all tasks:', err);
+    res.status(500).json({ error: 'Failed to fetch all tasks', message: err.message });
+  }
+};
+
 const getAssignedTasksStats = async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
@@ -418,6 +513,36 @@ const getCourseById = async (req, res) => {
     res.json(course);
   } catch (err) {
     console.error('Error fetching course:', err);
+    res.status(500).json({ error: 'Failed to get course', message: err.message });
+  }
+};
+
+const getCourseByName = async (req, res) => {
+  try {
+    const { courseName } = req.params;
+    if (!courseName) {
+      return res.status(400).json({ error: 'Course name is required' });
+    }
+    
+    console.log('=== FETCHING COURSE BY NAME ===');
+    console.log('Course name:', courseName);
+    
+    const course = await Course.findOne({ name: courseName });
+    console.log('Found course:', course ? 'Yes' : 'No');
+    
+    if (!course) {
+      return res.status(404).json({ 
+        error: 'Course not found', 
+        message: `No course found with name: ${courseName}` 
+      });
+    }
+    
+    res.json({
+      success: true,
+      course: course
+    });
+  } catch (err) {
+    console.error('Error fetching course by name:', err);
     res.status(500).json({ error: 'Failed to get course', message: err.message });
   }
 };
@@ -598,6 +723,31 @@ const assignTaskByEmail = async (req, res) => {
       quizzes: quizzes || []
     });
     const savedTask = await assignedTask.save();
+    
+    // ============================================================================
+    // ADDITIONAL: Create assigned course progress entry
+    // ============================================================================
+    console.log('=== CREATING ASSIGNED COURSE PROGRESS ENTRY ===');
+    
+    try {
+      console.log(`📝 Creating assigned course progress for: ${employee.name} (${employee.email}) - Course: ${taskTitle}`);
+      
+      const courseProgress = await assignCourseToEmployeeManager(
+        employee.email,
+        taskTitle, // Use taskTitle as course name
+        admin._id,
+        deadlineDate
+      );
+      
+      console.log(`✅ Created assigned course progress for ${employee.name}:`, courseProgress ? 'Success' : 'Failed');
+      console.log('✅ Assigned course progress entry created successfully');
+      
+    } catch (courseError) {
+      console.error('❌ Error creating assigned course progress entry:', courseError);
+      // Don't fail the entire request if course progress creation fails
+      console.log('⚠️ Task assignment succeeded, but course progress creation failed');
+    }
+    
     res.status(201).json({ 
       success: true, 
       message: 'Task assigned successfully', 
@@ -655,6 +805,191 @@ const startAssignedTask = async (req, res) => {
   }
 };
 
+// ============================================================================
+// ASSIGNED COURSE FUNCTIONS
+// ============================================================================
+
+const assignCourseToEmployeeController = async (req, res) => {
+  try {
+    console.log('🔍 DEBUG: assignCourseToEmployeeController called');
+    console.log('📝 Request body:', JSON.stringify(req.body, null, 2));
+    console.log('👤 User:', req.user);
+    
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { employeeEmail, courseName, deadline } = req.body;
+
+    if (!employeeEmail || !courseName) {
+      return res.status(400).json({ 
+        error: 'Missing required fields', 
+        details: 'Employee email and course name are required' 
+      });
+    }
+
+    // Check if course exists
+    const course = await Course.findOne({ title: courseName });
+    if (!course) {
+      return res.status(404).json({ 
+        error: 'Course not found', 
+        details: `Course "${courseName}" does not exist` 
+      });
+    }
+
+    // Check if employee exists
+    const employee = await Employee.findOne({ email: employeeEmail });
+    if (!employee) {
+      return res.status(404).json({ 
+        error: 'Employee not found', 
+        details: `Employee with email "${employeeEmail}" does not exist` 
+      });
+    }
+
+    const progress = await assignCourseToEmployeeManager(employeeEmail, courseName, req.user.id, deadline);
+    
+    res.status(201).json({ 
+      success: true, 
+      message: `Course "${courseName}" assigned successfully to ${employee.name}`,
+      progress 
+    });
+
+  } catch (error) {
+    console.error('Error assigning course to employee:', error);
+    res.status(500).json({ 
+      error: 'Failed to assign course', 
+      message: error.message 
+    });
+  }
+};
+
+const getEmployeeAssignedCourseProgress = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { employeeEmail } = req.params;
+
+    if (!employeeEmail) {
+      return res.status(400).json({ error: 'Employee email is required' });
+    }
+
+    // FIXED: Use the renamed imported function
+    const progress = await getEmployeeAssignedCourseProgressManager(employeeEmail);
+    
+    if (!progress) {
+      return res.status(404).json({ 
+        error: 'No progress found', 
+        details: `No assigned course progress found for ${employeeEmail}` 
+      });
+    }
+
+    res.json({ success: true, progress });
+
+  } catch (error) {
+    console.error('Error getting employee assigned course progress:', error);
+    res.status(500).json({ 
+      error: 'Failed to get employee progress', 
+      message: error.message 
+    });
+  }
+};
+
+const getAllEmployeesAssignedCourseProgress = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    // FIXED: Use the renamed imported function
+    const allProgress = await getAllEmployeesAssignedCourseProgressManager();
+    res.json({ success: true, progress: allProgress });
+
+  } catch (error) {
+    console.error('Error getting all employees assigned course progress:', error);
+    res.status(500).json({ 
+      error: 'Failed to get all employees progress', 
+      message: error.message 
+    });
+  }
+};
+
+// Test function to verify the collection is working
+const testAssignedCourseCollection = async (req, res) => {
+  try {
+    console.log('🧪 Testing assigned course collection...');
+    
+    // Import the model directly
+    const AssignedCourseUserProgress = require('../models/AssignedCourseUserProgress');
+    
+    // Count documents in collection
+    const count = await AssignedCourseUserProgress.countDocuments();
+    console.log('📊 Total documents in collection:', count);
+    
+    // Get all documents
+    const allDocs = await AssignedCourseUserProgress.find({});
+    console.log('📄 All documents:', JSON.stringify(allDocs, null, 2));
+    
+    res.json({ 
+      success: true, 
+      message: 'Collection test completed',
+      count: count,
+      documents: allDocs
+    });
+
+  } catch (error) {
+    console.error('❌ Error testing collection:', error);
+    res.status(500).json({ 
+      error: 'Failed to test collection', 
+      message: error.message 
+    });
+  }
+};
+
+// Test function to manually create a test assignment
+const createTestAssignment = async (req, res) => {
+  try {
+    console.log('🧪 Creating test assignment...');
+    
+    // Get first employee and admin
+    const employee = await Employee.findOne({});
+    const admin = await Admin.findOne({});
+    
+    if (!employee || !admin) {
+      return res.status(400).json({ 
+        error: 'No employee or admin found for testing',
+        employee: employee ? 'Found' : 'Not found',
+        admin: admin ? 'Found' : 'Not found'
+      });
+    }
+    
+    console.log('👤 Test employee:', employee.email);
+    console.log('👨‍💼 Test admin:', admin.email);
+    
+    // Create test assignment
+    const progress = await assignCourseToEmployeeManager(
+      employee.email, 
+      'Test Course', 
+      admin._id, 
+      new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
+    );
+    
+    res.json({ 
+      success: true, 
+      message: 'Test assignment created successfully',
+      progress: progress
+    });
+
+  } catch (error) {
+    console.error('❌ Error creating test assignment:', error);
+    res.status(500).json({ 
+      error: 'Failed to create test assignment', 
+      message: error.message 
+    });
+  }
+};
+
 module.exports = {
   getEmployees,
   getEmployeesForAssignment,
@@ -664,15 +999,23 @@ module.exports = {
   getAssignedTaskById,
   updateAssignedTaskProgress,
   deleteAssignedTask,
+  getAllTasksDebug,
   getAssignedTasksStats,
   createCourse,
   getCourses,
   getCourseById,
+  getCourseByName,
   updateCourse,
   deleteCourse,
   getAssignedCourses,
   getAvailableCourses,
   assignTaskByEmail,
   getAssignedTasksForUser,
-  startAssignedTask
+  startAssignedTask,
+  // Assigned course functions
+  assignCourseToEmployee: assignCourseToEmployeeController,
+  getEmployeeAssignedCourseProgress,
+  getAllEmployeesAssignedCourseProgress,
+  testAssignedCourseCollection,
+  createTestAssignment
 };

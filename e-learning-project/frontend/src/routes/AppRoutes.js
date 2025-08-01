@@ -20,10 +20,9 @@ import Lesson2 from '../pages/lesson2page';
 import Lesson3 from '../pages/lesson3page';
 import Lesson4 from '../pages/lesson4page';
 import Quiz from '../pages/quiz';
-import QuizLesson2 from '../pages/quiz2';
-import QuizLesson3 from '../pages/quiz3';
-import QuizLesson4 from '../pages/quiz4';
 import TaskDetailPage from '../pages/taskdetailpage';
+import TaskModulePage from '../pages/taskmodulepage';
+import AssignedQuizPage from '../pages/assignedquizpage';
 import CertificatePage from '../pages/certificate';
 import CertificateDetails from '../pages/certificatedetail';
 
@@ -56,11 +55,10 @@ function AppRoutes() {
         <Route path="/lesson2" element={<Lesson2 />} />
         <Route path="/lesson3" element={<Lesson3 />} />
         <Route path="/lesson4" element={<Lesson4 />} /> 
-        <Route path="/quiz" element={<Quiz />} />
-        <Route path="/quiz2" element={<QuizLesson2 />} />
-        <Route path="/quiz3" element={<QuizLesson3 />} />
-        <Route path="/quiz4" element={<QuizLesson4 />} />
+        <Route path="/quiz/:courseId/:mo_id" element={<Quiz />} />
         <Route path="/taskdetailpage" element={<TaskDetailPage />} />
+        <Route path="/taskmodulepage" element={<TaskModulePage />} />
+        <Route path="/assignedquizpage" element={<AssignedQuizPage />} />
 
         <Route path="/certificatedetail/:id" element={<CertificateDetails />} />
          <Route path="/course/:courseId/lesson/:lessonId" element={<LessonPage />} />

@@ -4,14 +4,14 @@ const mongoose = require('mongoose');
 const assignedTaskSchema = new mongoose.Schema({
   taskTitle: { type: String, required: true },
   description: { type: String, required: true },
-  module: { type: String, required: true },
+  module: { type: String },
   priority: { 
     type: String, 
     enum: ['low', 'medium', 'high'], 
     default: 'medium' 
   },
   deadline: { type: Date, required: true },
-  estimatedHours: { type: Number },
+
   reminderDays: { type: Number, default: 3 },
   assignedBy: {
     adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin', required: true },
@@ -48,7 +48,7 @@ const assignedTaskSchema = new mongoose.Schema({
   videos: [{
     _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
     title: { type: String, default: 'Untitled Video' },
-    url: { type: String, required: true },
+    url: { type: String, default: '' },
     thumbnail: { type: String, default: '/api/placeholder/300/180' },
     duration: { type: String, default: 'Unknown duration' }
   }],
@@ -56,9 +56,9 @@ const assignedTaskSchema = new mongoose.Schema({
     _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
     title: { type: String, default: 'Untitled Quiz' },
     questions: [{
-      question: { type: String, required: true },
-      options: [{ type: String, required: true }],
-      correctAnswer: { type: String, required: true }
+      question: { type: String, default: '' },
+      options: [{ type: String, default: '' }],
+      correctAnswer: { type: String, default: '' }
     }],
     passingScore: { type: Number, default: 70 }
   }]
@@ -71,4 +71,4 @@ assignedTaskSchema.pre('save', function(next) {
   next();
 });
 
-module.exports = mongoose.model('AssignedTask', assignedTaskSchema);
+module.exports = mongoose.model('AssignedTask', assignedTaskSchema, 'assignedtasks');

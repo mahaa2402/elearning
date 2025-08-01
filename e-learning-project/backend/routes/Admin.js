@@ -2,26 +2,33 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/Admin');
-const {
-   getEmployees,
-   getEmployeesForAssignment,
-   verifyToken,
-   createAssignedTask,
-   getAssignedTasks,
-   getAssignedTaskById,
-   updateAssignedTaskProgress,
-   deleteAssignedTask,
-   getAssignedTasksStats,
-   createCourse,
-   getCourses,
-   getCourseById,
-   updateCourse,
-   deleteCourse,
-   getAssignedCourses,
-   getAvailableCourses,
-   assignTaskByEmail,
-   getAssignedTasksForUser,
-   startAssignedTask
+const { 
+  getEmployees, 
+  getEmployeesForAssignment, 
+  verifyToken, 
+  createAssignedTask, 
+  getAssignedTasks, 
+  getAssignedTaskById, 
+  updateAssignedTaskProgress, 
+  deleteAssignedTask, 
+  getAllTasksDebug,
+  getAssignedTasksStats,
+  createCourse,
+  getCourses,
+  getCourseById,
+  getCourseByName,
+  updateCourse,
+  deleteCourse,
+  getAssignedCourses,
+  getAvailableCourses,
+  assignTaskByEmail,
+  getAssignedTasksForUser,
+  startAssignedTask,
+  assignCourseToEmployee,
+  getEmployeeAssignedCourseProgress,
+  getAllEmployeesAssignedCourseProgress,
+  testAssignedCourseCollection,
+  createTestAssignment
 } = require('../controllers/Admin');
 const { authenticateToken } = require('../middleware/auth'); // Assuming you have this middleware
 
@@ -38,6 +45,7 @@ router.get('/employees-for-assignment', authenticateToken, getEmployeesForAssign
 // Main assigned tasks routes
 router.post('/assigned-tasks', authenticateToken, createAssignedTask);
 router.get('/assigned-tasks', authenticateToken, getAssignedTasks);
+router.get('/debug/all-tasks', authenticateToken, getAllTasksDebug);
 router.get('/assigned-tasks/stats/dashboard', authenticateToken, getAssignedTasksStats);
 router.get('/assigned-tasks/:id', authenticateToken, getAssignedTaskById);
 router.put('/assigned-tasks/:id/progress', authenticateToken, updateAssignedTaskProgress);
@@ -58,6 +66,7 @@ router.post('/assign-task-email', authenticateToken, assignTaskByEmail); // Alte
 router.post('/courses', authenticateToken, createCourse);
 router.get('/courses', authenticateToken, getCourses);
 router.get('/courses/:id', authenticateToken, getCourseById);
+router.get('/courses/name/:courseName', authenticateToken, getCourseByName);
 router.put('/courses/:id', authenticateToken, updateCourse);
 router.delete('/courses/:id', authenticateToken, deleteCourse);
 
@@ -65,6 +74,17 @@ router.delete('/courses/:id', authenticateToken, deleteCourse);
 // Course Assignment Routes
 router.get('/assigned-courses', authenticateToken, getAssignedCourses);
 router.get('/available-courses', authenticateToken, getAvailableCourses);
+
+// ============ ASSIGNED COURSE PROGRESS ROUTES ============
+// Assigned Course Progress Management Routes
+router.post('/assign-course', authenticateToken, assignCourseToEmployee);
+router.get('/employee/:employeeEmail/assigned-course-progress', authenticateToken, getEmployeeAssignedCourseProgress);
+router.get('/all-employees-assigned-course-progress', authenticateToken, getAllEmployeesAssignedCourseProgress);
+
+// Test route for debugging
+router.get('/test-assigned-course-collection', authenticateToken, testAssignedCourseCollection);
+router.get('/test-assigned-course-collection-public', testAssignedCourseCollection); // Public test route
+router.post('/create-test-assignment', createTestAssignment); // Public test route for creating assignment
 
 // ============ ADDITIONAL UTILITY ROUTES ============
 // Task Statistics

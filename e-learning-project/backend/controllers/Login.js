@@ -3,6 +3,7 @@ const Employee = require('../models/Employee');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { initializeEmployeeProgress } = require('../commonUserProgressManager');
+const { initializeAssignedCourseProgress } = require('../assignedCourseUserProgressManager');
 
 // Employee/Admin Login
 const login = async (req, res) => {
@@ -115,9 +116,17 @@ const register = async (req, res) => {
     // Initialize common user progress for the newly registered employee
     try {
       await initializeEmployeeProgress(savedEmployee.email);
-      console.log('✅ Initialized progress for newly registered employee:', savedEmployee.email);
+      console.log('✅ Initialized common progress for newly registered employee:', savedEmployee.email);
     } catch (error) {
-      console.log('⚠️ Could not initialize employee progress:', error.message);
+      console.log('⚠️ Could not initialize common employee progress:', error.message);
+    }
+
+    // Initialize assigned course user progress for the newly registered employee
+    try {
+      await initializeAssignedCourseProgress(savedEmployee.email);
+      console.log('✅ Initialized assigned course progress for newly registered employee:', savedEmployee.email);
+    } catch (error) {
+      console.log('⚠️ Could not initialize assigned course progress:', error.message);
     }
 
     res.status(201).json({
