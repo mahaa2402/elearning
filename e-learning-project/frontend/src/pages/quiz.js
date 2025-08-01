@@ -626,6 +626,15 @@ const Quiz = () => {
   //   }
    };
 
+   const getNextMoId = (mo_id) => {
+    const match = mo_id.match(/^(\D+)(\d+)$/);
+    if (!match) return null;
+  
+    const [ , prefix, numberPart ] = match;
+    const next = (parseInt(numberPart) + 1).toString().padStart(numberPart.length, '0');
+    return `${prefix}${next}`;
+  };
+
   // Handle retake quiz button click
   const handleRetakeQuiz = async () => {
     try {
@@ -746,9 +755,25 @@ const Quiz = () => {
             </div>
           )}
           {isPassed && (
-            <button onClick={() => window.location.href = '/lesson2'} className="next-course-button">
+            // <button onClick={() => window.location.href = '/quiz/${courseId}/${mo_id}'} className="next-course-button">
+            //   Start Next Course
+            // </button>
+
+            <button
+              onClick={() => {
+                const nextMoId = getNextMoId(mo_id);
+                if (!nextMoId) {
+                  alert("Invalid mo_id format");
+                  return;
+                }
+                window.location.href =` /course/${courseId}/lesson/${nextMoId}`;
+              }}
+              className="next-course-button"
+            >
               Start Next Course
             </button>
+
+            
           )}
         </div>
       </div>
