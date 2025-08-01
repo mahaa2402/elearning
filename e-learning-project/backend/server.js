@@ -44,7 +44,10 @@ app.use((req, res, next) => {
 });
 
 // MongoDB connection
-//const mongoURI = 'mongodb+srv://mahaashri:mahaashri%40123@e-learning-platform.wx1swy3.mongodb.net/elearning?retryWrites=true&w=majority';
+
+
+
+//const mongoURI = "mongodb+srv://mahaashri:mahaashri%40123@e-learning-platform.wx1swy3.mongodb.net/elearning?retryWrites=true&w=majority"
 
 // Create default admin account if none exists (for testing)
 const createDefaultAdmin = async () => {
@@ -65,12 +68,28 @@ const createDefaultAdmin = async () => {
   }
 };
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log('✅ Connected to MongoDB Atlas');
-    createDefaultAdmin();
-  })
-  .catch(err => console.error('❌ MongoDB connection failed:', err));
+
+// MongoDB connection with proper error handling
+//const mongoURI = process.env.MONGO_URI //|| "mongodb+srv://mahaashri:mahaashri%40123@e-learning-platform.wx1swy3.mongodb.net/elearning?retryWrites=true&w=majority";
+
+console.log('🔗 Attempting to connect to MongoDB...');
+//console.log('📡 Connection string:', mongoURI ? 'Present' : 'Missing');
+
+mongoose.connect(process.env.MONGO_URI, {
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+})
+.then(() => {
+  console.log('✅ Connected to MongoDB Atlas');
+  createDefaultAdmin();
+})
+.catch(err => {
+  console.error('❌ MongoDB connection failed:', err);
+  console.error('🔍 Connection details:', {
+    uri: mongoURI ? 'Present' : 'Missing',
+    error: err.message
+  });
+});
 
 // Routes Setup
 app.use('/api/auth', authRoutes);
