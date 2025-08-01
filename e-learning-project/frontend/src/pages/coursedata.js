@@ -1,8 +1,8 @@
 const courseData = {
-  1: {
+  "68789a19935761547602aef3": {
     name: "ISP",
     lessons: {
-      1: {
+      "ISP01": {
         title: "Introduction to Information Security & Data Protection",
         videoUrl: "/Module 1_Course_1.mp4",
         content: [
@@ -15,7 +15,7 @@ const courseData = {
           "Always follow company policies and procedures."
         ]
       },
-      2: {
+      "ISP02": {
         title: "Legal Frameworks & Data Subject Rights",
         videoUrl: "/videos/c1l2.mp4",
         content: [
@@ -28,14 +28,14 @@ const courseData = {
           "Always follow company policies and procedures."
         ]
       },
-      3: {
+      "ISP03": {
         title: "Placeholder Title for Lesson 3",
         videoUrl: "/videos/c1l3.mp4",
         content: [
           "Content for Lesson 3 will go here..."
         ]
       },
-      4: {
+      "ISP04": {
         title: "Placeholder Title for Lesson 4",
         videoUrl: "/videos/c1l4.mp4",
         content: [
@@ -44,10 +44,10 @@ const courseData = {
       }
     }
   },
-  2: {
+  "68789a19935761547602aef1": {
     name: "posh",
     lessons: {
-      1: {
+      "posh01": {
         title: "Overview & Legal Foundation of POSH Act",
         videoUrl: "/videos/c2l1.mp4",
         content: [
@@ -56,21 +56,21 @@ const courseData = {
           "Aimed at protecting women from sexual harassment and providing redressal mechanisms."
         ]
       },
-      2: {
+      "posh02": {
         title: "Placeholder Title for Lesson 2",
         videoUrl: "/videos/c2l2.mp4",
         content: [
           "Content for Lesson 2 will go here..."
         ]
       },
-      3: {
+      "posh03": {
         title: "Placeholder Title for Lesson 3",
         videoUrl: "/videos/c2l3.mp4",
         content: [
           "Content for Lesson 3 will go here..."
         ]
       },
-      4: {
+      "posh04": {
         title: "Placeholder Title for Lesson 4",
         videoUrl: "/videos/c2l4.mp4",
         content: [
@@ -79,10 +79,10 @@ const courseData = {
       }
     }
   },
-  3: {
+  "68885822d486bba2975cdca2": {
     name: "GDPR",
     lessons: {
-      1: {
+      "GDPR01": {
         title: "Basics of GDPR & Information Security",
         videoUrl: "/videos/c3l1.mp4",
         content: [
@@ -92,7 +92,7 @@ const courseData = {
           "Overview of ISP — confidentiality, integrity, and availability of information."
         ]
       },
-      2: {
+      "GDPR02": {
         title: "Principles, Rights & Responsibilities",
         videoUrl: "/videos/c3l2.mp4",
         content: [
@@ -101,7 +101,7 @@ const courseData = {
           "Employee responsibilities like locking PCs, not sharing passwords, and policy compliance."
         ]
       },
-      3: {
+      "GDPR03": {
         title: "Safe Practices & Company Policies",
         videoUrl: "/videos/c3l3.mp4",
         content: [
@@ -111,7 +111,7 @@ const courseData = {
           "Working safely while remote or outside the office."
         ]
       },
-      4: {
+      "GDPR04": {
         title: "Breaches, Penalties & Real Cases",
         videoUrl: "/videos/c3l4.mp4",
         content: [
@@ -123,10 +123,10 @@ const courseData = {
       }
     }
   },
-  4: {
+  "68885a71d486bba2975cdca4": {
     name: "Factory Act, Regulations & Productivity Tools",
     lessons: {
-      1: {
+      "Factory Act, Regulations & Productivity Tools01": {
         title: "Introduction to Factory Act",
         videoUrl: "/videos/c4l1.mp4",
         content: [
@@ -135,7 +135,7 @@ const courseData = {
           "Key responsibilities of factory managers and occupiers."
         ]
       },
-      2: {
+      "Factory Act, Regulations & Productivity Tools02": {
         title: "Worker Welfare & Safety Provisions",
         videoUrl: "/videos/c4l2.mp4",
         content: [
@@ -144,7 +144,7 @@ const courseData = {
           "Working hours, leave entitlements, and overtime rules."
         ]
       },
-      3: {
+      "Factory Act, Regulations & Productivity Tools03": {
         title: "Legal Compliance & Inspections",
         videoUrl: "/videos/c4l3.mp4",
         content: [
@@ -153,7 +153,7 @@ const courseData = {
           "Maintaining records and documentation compliance."
         ]
       },
-      4: {
+      "Factory Act, Regulations & Productivity Tools04": {
         title: "Employee Rights & Grievance Redressal",
         videoUrl: "/videos/c4l4.mp4",
         content: [
@@ -164,10 +164,10 @@ const courseData = {
       }
     }
     },
-  5: {
+  "68885c86d486bba2975cdca6": {
     name: "Welding, CNC, Fitting Skills",
     lessons: {
-      1: {
+      "Welding, CNC, Fitting Skills01": {
         title: "Basics of Industrial Work Skills",
         videoUrl: "/videos/c5l1.mp4",
         content: [
@@ -176,7 +176,7 @@ const courseData = {
           "Importance of safety and PPE usage."
         ]
       },
-      2: {
+      "Welding, CNC, Fitting Skills02": {
         title: "Welding & Safety Guidelines",
         videoUrl: "/videos/c5l2.mp4",
         content: [
@@ -185,7 +185,7 @@ const courseData = {
           "Common hazards and how to prevent them."
         ]
       },
-      3: {
+      "Welding, CNC, Fitting Skills03": {
         title: "CNC Operations Overview",
         videoUrl: "/videos/c5l3.mp4",
         content: [
@@ -194,7 +194,7 @@ const courseData = {
           "Reading basic blueprints and operating CNC safely."
         ]
       },
-      4: {
+      "Welding, CNC, Fitting Skills04": {
         title: "Fitting Techniques & Maintenance",
         videoUrl: "/videos/c5l4.mp4",
         content: [
@@ -205,15 +205,14 @@ const courseData = {
       }
     }
   },
-6: {
-  id: "68789a19935761547602b400",
-  _id: "68885cf5d486bba2975cdca8",
+"68885cf5d486bba2975cdca8": {
+  
   name: "Office Tools (MS Excel, Docs)",
   description: "This course offers a structured understanding of Microsoft Excel and Word.",
   level: "Intermediate",
   backgroundImage: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=400&h=2…",
   lessons: {
-    1: {
+    "Office Tools (MS Excel, Docs)01": {
       m_id: "OT01",
       _id: "68789a19935761547602b401",
       title: "Getting Started with Microsoft Excel",
@@ -226,7 +225,7 @@ const courseData = {
         "Creating, saving, and formatting workbooks."
       ]
     },
-    2: {
+    "Office Tools (MS Excel, Docs)02": {
       m_id: "OT02",
       _id: "68789a19935761547602b402",
       title: "Formulas, Functions & Data Handling",
@@ -239,7 +238,7 @@ const courseData = {
         "Intro to IF statements and conditional logic."
       ]
     },
-    3: {
+    "Office Tools (MS Excel, Docs)03": {
       m_id: "OT03",
       title: "Creating Charts and Visualizations",
       duration: 30,
@@ -251,7 +250,7 @@ const courseData = {
         "Using charts to tell stories with data."
       ]
     },
-    4: {
+    "Office Tools (MS Excel, Docs)04": {
       m_id: "OT04",
       title: "Working with MS Word: Templates & Styles",
       duration: 35,

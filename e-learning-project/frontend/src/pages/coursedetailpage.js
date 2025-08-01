@@ -7,6 +7,7 @@ import staticCourseData from './coursedata'; // Renamed to avoid confusion
 const CourseDetailPage = () => {
   const [courseData, setCourseData] = useState(null);
   const { title } = useParams();
+  console.log("just foir fun",title)
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,6 +47,7 @@ const CourseDetailPage = () => {
     
     if (foundCourseId) {
       // Navigate to coursedetailpage/[courseId]/MODULE/1
+      console.log("sab",foundCourseId)
       navigate(`/course/${foundCourseId}/lesson/1`);
     } else {
       console.error('Course not found in static data');
