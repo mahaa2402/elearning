@@ -8,8 +8,6 @@ const TaskAssignment = () => {
     assignees: [],
     deadline: '',
     priority: 'medium',
-    module: '',
-    estimatedHours: '',
     reminderDays: '3'
   });
 
@@ -17,9 +15,72 @@ const TaskAssignment = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [employees, setEmployees] = useState([]);
+  const [courses, setCourses] = useState([]); // New state for courses
   const [loading, setLoading] = useState(true);
+  const [coursesLoading, setCoursesLoading] = useState(true); // New loading state for courses
   const [searchTerm, setSearchTerm] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fetch courses from API for task title dropdown
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setCoursesLoading(true);
+        setError(null);
+        
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setError('Authentication required. Please log in again.');
+          setCourses([]);
+          setCoursesLoading(false);
+          return;
+        }
+
+        const response = await fetch('http://localhost:5000/api/admin/courses', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Courses API Error Response:', errorText);
+          throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        }
+
+        const result = await response.json();
+        console.log('Courses API Response:', result);
+        
+        let courseData;
+        if (result && Array.isArray(result)) {
+          courseData = result;
+        } else if (result && result.courses && Array.isArray(result.courses)) {
+          courseData = result.courses;
+        } else {
+          console.error('Unexpected courses response format:', result);
+          setError('Unexpected response format from courses server.');
+          setCourses([]);
+          setCoursesLoading(false);
+          return;
+        }
+
+        // Extract course names from the admin_courses response
+        const courseNames = courseData.map(course => course.name).filter(Boolean);
+        setCourses(courseNames);
+        console.log('Available course names:', courseNames);
+      } catch (err) {
+        console.error('Error fetching courses:', err);
+        setError(`Failed to load courses: ${err.message}`);
+        setCourses([]);
+      } finally {
+        setCoursesLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
 
   // Fetch employees from API
   useEffect(() => {
@@ -96,14 +157,7 @@ const TaskAssignment = () => {
     }
   };
 
-  const modules = [
-    'ISP (Information Security Policy)',
-    'POSH (Prevention of Sexual Harassment)',
-    'HR Policies & Laws',
-    'Data Protection Training',
-    'Workplace Safety',
-    'Ethics & Compliance'
-  ];
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -147,7 +201,7 @@ const TaskAssignment = () => {
     console.log('Form Data:', formData);
     console.log('Selected Employees:', selectedEmployees);
 
-    const requiredFields = ['taskTitle', 'description', 'module', 'deadline'];
+    const requiredFields = ['taskTitle', 'description', 'deadline'];
     const missingFields = requiredFields.filter(field => !formData[field]);
     if (missingFields.length > 0) {
       setError(`Missing required fields: ${missingFields.join(', ')}`);
@@ -186,10 +240,8 @@ const TaskAssignment = () => {
     const taskData = {
       taskTitle: formData.taskTitle,
       description: formData.description,
-      module: formData.module,
       deadline: formData.deadline,
       priority: formData.priority || 'medium',
-      estimatedHours: formData.estimatedHours ? parseFloat(formData.estimatedHours) : undefined,
       reminderDays: formData.reminderDays ? parseInt(formData.reminderDays) : 3,
       assignees: selectedEmployees.map(emp => ({
         id: emp._id,
@@ -230,8 +282,6 @@ const TaskAssignment = () => {
         assignees: [],
         deadline: '',
         priority: 'medium',
-        module: '',
-        estimatedHours: '',
         reminderDays: '3'
       });
       setSelectedEmployees([]);
@@ -301,17 +351,44 @@ const TaskAssignment = () => {
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Task Title *
+                  Task Title (Course) *
                 </label>
-                <input
-                  type="text"
-                  name="taskTitle"
-                  value={formData.taskTitle}
-                  onChange={handleInputChange}
-                  placeholder="Enter task title (e.g., Complete POSH Training)"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
+                {coursesLoading ? (
+                  <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500">
+                    Loading courses...
+                  </div>
+                ) : (
+                  <>
+                    <select
+                      name="taskTitle"
+                      value={formData.taskTitle}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    >
+                      <option value="">Select a course for task</option>
+                      {courses.map((course, index) => (
+                        <option key={index} value={course}>{course}</option>
+                      ))}
+                      <option value="custom">+ Add Custom Task Title</option>
+                    </select>
+                    {formData.taskTitle === 'custom' && (
+                      <input
+                        type="text"
+                        name="customTaskTitle"
+                        placeholder="Enter custom task title..."
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
+                        onChange={(e) => setFormData(prev => ({ ...prev, taskTitle: e.target.value }))}
+                      />
+                    )}
+                  </>
+                )}
+                {courses.length === 0 && !coursesLoading && (
+                  <p className="text-sm text-gray-500 mt-1">No courses available. Please add courses first.</p>
+                )}
+                {error && error.includes('courses') && (
+                  <p className="text-sm text-red-500 mt-1">Failed to load courses. You can still enter a custom task title.</p>
+                )}
               </div>
 
               <div>
@@ -329,78 +406,40 @@ const TaskAssignment = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Learning Module *
-                  </label>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Priority
+                </label>
+                <div className="flex items-center space-x-2">
                   <select
-                    name="module"
-                    value={formData.module}
+                    name="priority"
+                    value={formData.priority}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="">Select a module</option>
-                    {modules.map((module, index) => (
-                      <option key={index} value={module}>{module}</option>
-                    ))}
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
                   </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Priority
-                  </label>
-                  <div className="flex items-center space-x-2">
-                    <select
-                      name="priority"
-                      value={formData.priority}
-                      onChange={handleInputChange}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="low">Low</option>
-                      <option value="medium">Medium</option>
-                      <option value="high">High</option>
-                    </select>
-                    <div
-                      className="w-4 h-4 rounded-full"
-                      style={{ backgroundColor: getPriorityColor(formData.priority) }}
-                    />
-                  </div>
+                  <div
+                    className="w-4 h-4 rounded-full"
+                    style={{ backgroundColor: getPriorityColor(formData.priority) }}
+                  />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Deadline *
-                  </label>
-                  <input
-                    type="datetime-local"
-                    name="deadline"
-                    value={formData.deadline}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Estimated Hours
-                  </label>
-                  <input
-                    type="number"
-                    name="estimatedHours"
-                    value={formData.estimatedHours}
-                    onChange={handleInputChange}
-                    placeholder="e.g., 2.5"
-                    step="0.5"
-                    min="0.5"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Deadline *
+                </label>
+                <input
+                  type="datetime-local"
+                  name="deadline"
+                  value={formData.deadline}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
               </div>
 
               <div>
@@ -436,13 +475,12 @@ const TaskAssignment = () => {
                   <div>{error}</div>
                   <details className="mt-2 text-sm">
                     <summary className="cursor-pointer font-medium">Debug Information</summary>
-                    <div className="mt-2 p-2 bg-red-100 rounded">
-                      <p>Selected employees: {selectedEmployees.length}</p>
-                      <p>Task title: {formData.taskTitle || 'Not set'}</p>
-                      <p>Module: {formData.module || 'Not set'}</p>
-                      <p>Deadline: {formData.deadline || 'Not set'}</p>
-                      <p>Check browser console for more details</p>
-                    </div>
+                                         <div className="mt-2 p-2 bg-red-100 rounded">
+                       <p>Selected employees: {selectedEmployees.length}</p>
+                       <p>Task title: {formData.taskTitle || 'Not set'}</p>
+                       <p>Deadline: {formData.deadline || 'Not set'}</p>
+                       <p>Check browser console for more details</p>
+                     </div>
                   </details>
                 </div>
               )}
@@ -554,20 +592,16 @@ const TaskAssignment = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Task Preview</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Task:</span>
-                  <span className="font-medium">{formData.taskTitle || 'Untitled Task'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Module:</span>
-                  <span className="font-medium">{formData.module || 'Not selected'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Assignees:</span>
-                  <span className="font-medium">{selectedEmployees.length} employee(s)</span>
-                </div>
-              </div>
+                             <div className="space-y-3">
+                 <div className="flex justify-between">
+                   <span className="text-gray-600">Task:</span>
+                   <span className="font-medium">{formData.taskTitle === 'custom' ? 'Custom Task' : (formData.taskTitle || 'Untitled Task')}</span>
+                 </div>
+                 <div className="flex justify-between">
+                   <span className="text-gray-600">Assignees:</span>
+                   <span className="font-medium">{selectedEmployees.length} employee(s)</span>
+                 </div>
+               </div>
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Deadline:</span>
@@ -586,12 +620,7 @@ const TaskAssignment = () => {
                     </span>
                   </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Estimated Time:</span>
-                  <span className="font-medium">
-                    {formData.estimatedHours ? `${formData.estimatedHours} hours` : 'Not set'}
-                  </span>
-                </div>
+                
               </div>
             </div>
           </div>

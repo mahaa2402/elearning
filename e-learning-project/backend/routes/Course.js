@@ -3,6 +3,7 @@ const router = express.Router();
 const Common_Course = require('../models/common_courses');
 const {getcourse}=require('../controllers/User')
 
+ const Quiz=require('../models/Quiz');
 // GET /api/courses - Get all courses
 router.get('/', async (req, res) => {
   try {
@@ -36,6 +37,30 @@ router.get('/getcourse', async (req, res) => {
 });
 
 router.post('/getcoursedetailpage',getcourse)
+
+router.post('/questions', async (req, res) => {  // POST /api/quiz/questions
+  const { courseId, moduleId, attemptNumber = 1 } = req.body;
+
+  if (!courseId || !moduleId) {
+    return res.status(400).json({ error: 'courseId and moduleId are required' });
+  }
+
+  try {
+    // Use the new batch method to get questions based on attempt number
+    const quiz = await Quiz.getQuestionsByCourseAndModuleBatch(courseId, moduleId, attemptNumber);
+    
+    console.log("the quiz is", quiz);
+    if (!quiz) {
+      return res.status(404).json({ error: 'Quiz not found' });
+    }
+
+    res.json(quiz.questions); // returns the array of questions
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 
 
 

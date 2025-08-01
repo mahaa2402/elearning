@@ -1,5 +1,6 @@
 const UserProgress = require('../models/Userprogress');
 const { updateCourseProgress } = require('../commonUserProgressManager');
+const { updateAssignedCourseProgress } = require('../assignedCourseUserProgressManager');
 
 // Save progress after a quiz is completed
 const saveQuizProgress = async (req, res) => {
@@ -39,6 +40,13 @@ const saveQuizProgress = async (req, res) => {
       await updateCourseProgress(userEmail, courseName);
     } catch (error) {
       console.log('⚠️ Could not update common course progress:', error.message);
+    }
+
+    // Update assigned course progress if this course is assigned to the employee
+    try {
+      await updateAssignedCourseProgress(userEmail, courseName);
+    } catch (error) {
+      console.log('⚠️ Could not update assigned course progress:', error.message);
     }
 
     res.status(200).json({ success: true, progress });
