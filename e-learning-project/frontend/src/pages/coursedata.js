@@ -4,7 +4,7 @@ const courseData = {
     lessons: {
       1: {
         title: "Introduction to Information Security & Data Protection",
-        videoUrl: "/Module 1_Course_1.mp4",
+        videoUrl: "https://intern-vista-work-space.s3.eu-north-1.amazonaws.com/e-learning/Module+1_Course_1.mp4",
         content: [
           "What is Information Securitsy?",
           "Security revolves around confidentiality, availability, and integrity of data.",
@@ -17,7 +17,7 @@ const courseData = {
       },
       2: {
         title: "Legal Frameworks & Data Subject Rights",
-        videoUrl: "/videos/c1l2.mp4",
+        videoUrl: "https://intern-vista-work-space.s3.eu-north-1.amazonaws.com/e-learning/Module_2+Course_1.mp4",
         content: [
           "",
           "Security revolves around confidentiality, availability, and integrity of data.",
@@ -30,14 +30,14 @@ const courseData = {
       },
       3: {
         title: "Placeholder Title for Lesson 3",
-        videoUrl: "/videos/c1l3.mp4",
+        videoUrl: "https://intern-vista-work-space.s3.eu-north-1.amazonaws.com/e-learning/Module_3+Course_1.mp4",
         content: [
           "Content for Lesson 3 will go here..."
         ]
       },
       4: {
         title: "Placeholder Title for Lesson 4",
-        videoUrl: "/videos/c1l4.mp4",
+        videoUrl: "https://intern-vista-work-space.s3.eu-north-1.amazonaws.com/e-learning/Module_4+Course_1.mp4",
         content: [
           "Content for Lesson 4 will go here..."
         ]
@@ -83,8 +83,8 @@ const courseData = {
     name: "GDPR",
     lessons: {
       1: {
-        title: "Basics of GDPR & Information Security",
-        videoUrl: "/videos/c3l1.mp4",
+        title: "intern",
+        videoUrl: "https://intern-vista-work-space.s3.eu-north-1.amazonaws.com/e-learning/Module+1_Course_1.mp4",
         content: [
           "What is GDPR and its global scope.",
           "Definition of personal and sensitive data.",
@@ -94,7 +94,7 @@ const courseData = {
       },
       2: {
         title: "Principles, Rights & Responsibilities",
-        videoUrl: "/videos/c3l2.mp4",
+        videoUrl: "https://intern-vista-work-space.s3.eu-north-1.amazonaws.com/e-learning/Module_2+Course_1.mp4",
         content: [
           "Lawful bases for data processing: consent, legal obligation, vital interest, etc.",
           "Rights of data subjects under GDPR.",
@@ -103,7 +103,7 @@ const courseData = {
       },
       3: {
         title: "Safe Practices & Company Policies",
-        videoUrl: "/videos/c3l3.mp4",
+        videoUrl: "https://intern-vista-work-space.s3.eu-north-1.amazonaws.com/e-learning/Module_3+Course_1.mp4",
         content: [
           "Using company-approved devices and VPNs.",
           "Storing physical documents securely and not using personal devices for official work.",
@@ -113,7 +113,7 @@ const courseData = {
       },
       4: {
         title: "Breaches, Penalties & Real Cases",
-        videoUrl: "/videos/c3l4.mp4",
+        videoUrl: "https://intern-vista-work-space.s3.eu-north-1.amazonaws.com/e-learning/Module_4+Course_1.mp4",
         content: [
           "What is considered a data breach and how to report within 72 hours.",
           "Penalties under GDPR for violations.",
