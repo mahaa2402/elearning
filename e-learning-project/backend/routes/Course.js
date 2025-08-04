@@ -27,11 +27,11 @@ router.post('/', async (req, res) => {
 
 router.get('/getcourse', async (req, res) => {
   try {
-    const courseSummaries = await Common_Course.getCourseInfoWithoutModules();
-    console.log("hello")
-    res.status(200).json(courseSummaries);
+    const courses = await Common_Course.find({});
+    console.log("Fetched courses with modules:", courses.length);
+    res.status(200).json(courses);
   } catch (error) {
-    console.error('Error fetching course summaries:', error);
+    console.error('Error fetching courses:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

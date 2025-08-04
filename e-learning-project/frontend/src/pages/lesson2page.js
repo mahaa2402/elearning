@@ -20,7 +20,7 @@ const Lesson02ISP = () => {
     const fetchProgress = async () => {
       const token = localStorage.getItem('authToken') || localStorage.getItem('token');
       const userEmail = localStorage.getItem('employeeEmail');
-      const courseName = 'ISP Basics';
+      const courseName = 'ISP'; // Fixed to match common course name in database
       if (!token || !userEmail) return;
       try {
         const res = await fetch(`http://localhost:5000/api/progress/get?userEmail=${encodeURIComponent(userEmail)}&courseName=${encodeURIComponent(courseName)}`, {

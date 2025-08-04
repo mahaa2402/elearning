@@ -43,6 +43,57 @@
   margin-bottom: 20px;
 }
 
+/* New styles for course completion details */
+.course-details {
+  margin: 20px 0;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #16a085;
+}
+
+.completion-info {
+  font-size: 16px;
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.modules-list {
+  text-align: left;
+  margin-top: 10px;
+}
+
+.modules-list p {
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 5px;
+}
+
+.modules-list ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.modules-list li {
+  padding: 3px 0;
+  color: #34495e;
+  font-size: 14px;
+}
+
+.modules-list li:before {
+  content: "✓ ";
+  color: #27ae60;
+  font-weight: bold;
+}
+
+.certificate-id {
+  font-size: 14px;
+  color: #7f8c8d;
+  font-style: italic;
+  margin-bottom: 20px;
+}
+
 .date {
   font-size: 16px;
   margin-bottom: 30px;

@@ -28,7 +28,8 @@ const {
   getEmployeeAssignedCourseProgress,
   getAllEmployeesAssignedCourseProgress,
   testAssignedCourseCollection,
-  createTestAssignment
+  createTestAssignment,
+  testCommonCourseProgress
 } = require('../controllers/Admin');
 const { authenticateToken } = require('../middleware/auth'); // Assuming you have this middleware
 
@@ -85,6 +86,7 @@ router.get('/all-employees-assigned-course-progress', authenticateToken, getAllE
 router.get('/test-assigned-course-collection', authenticateToken, testAssignedCourseCollection);
 router.get('/test-assigned-course-collection-public', testAssignedCourseCollection); // Public test route
 router.post('/create-test-assignment', createTestAssignment); // Public test route for creating assignment
+router.post('/test-common-course-progress', testCommonCourseProgress); // Public test route for common course progress
 
 // ============ ADDITIONAL UTILITY ROUTES ============
 // Task Statistics
