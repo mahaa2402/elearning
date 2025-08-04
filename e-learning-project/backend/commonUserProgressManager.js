@@ -83,11 +83,24 @@ async function initializeEmployeeProgress(employeeEmail) {
  */
 async function updateCourseProgress(employeeEmail, courseName) {
   try {
+    console.log(`🔍 DEBUG: updateCourseProgress called for ${employeeEmail} - ${courseName}`);
+    
     // Check if the course is a common course
     const isCommonCourse = await CommonCourse.findOne({ title: courseName });
+    console.log(`🔍 Checking if "${courseName}" is a common course:`, isCommonCourse ? 'Yes' : 'No');
+    
     if (!isCommonCourse) {
-      console.log(`Course "${courseName}" is not a common course, skipping progress update`);
+      console.log(`⚠️ Course "${courseName}" is not a common course, skipping progress update`);
       return null;
+    }
+
+    // Get current progress to see what we're updating
+    const currentProgress = await CommonUserProgress.findOne({ employeeEmail: employeeEmail });
+    console.log(`🔍 Current progress for ${employeeEmail}:`, currentProgress ? 'Found' : 'Not found');
+    
+    if (currentProgress) {
+      const currentCourseProgress = currentProgress.courseProgress.get(courseName) || 0;
+      console.log(`📊 Current progress for ${courseName}: ${currentCourseProgress}`);
     }
 
     // Update the specific course progress by 1
@@ -98,6 +111,7 @@ async function updateCourseProgress(employeeEmail, courseName) {
     );
 
     console.log(`✅ Updated progress for ${employeeEmail} - ${courseName}: +1`);
+    console.log(`📊 New progress document:`, JSON.stringify(result, null, 2));
     return result;
 
   } catch (error) {
@@ -292,6 +306,98 @@ async function getProgressStatistics() {
   }
 }
 
+/**
+ * Check if all modules in a course are completed
+ */
+async function isCourseCompleted(employeeEmail, courseName) {
+  try {
+    console.log(`🔍 Checking if course "${courseName}" is completed for ${employeeEmail}`);
+    
+    // Get the course details to know total modules
+    const course = await CommonCourse.findOne({ title: courseName });
+    if (!course) {
+      console.log(`⚠️ Course "${courseName}" not found in common courses`);
+      return false;
+    }
+    
+    const totalModules = course.modules.length;
+    console.log(`📊 Total modules in ${courseName}: ${totalModules}`);
+    
+    // Get user progress for this course
+    const UserProgress = require('./models/Userprogress');
+    const userProgress = await UserProgress.findOne({ userEmail: employeeEmail, courseName });
+    if (!userProgress) {
+      console.log(`📊 No progress found for ${employeeEmail} in ${courseName}`);
+      return false;
+    }
+    
+    const completedModulesCount = userProgress.completedModules.length;
+    console.log(`📊 Completed modules: ${completedModulesCount}/${totalModules}`);
+    
+    const isCompleted = completedModulesCount >= totalModules;
+    console.log(`✅ Course completion status: ${isCompleted ? 'COMPLETED' : 'IN PROGRESS'}`);
+    
+    return {
+      isCompleted,
+      completedModules: userProgress.completedModules,
+      totalModules,
+      completedCount: completedModulesCount
+    };
+    
+  } catch (error) {
+    console.error('❌ Error checking course completion:', error);
+    return false;
+  }
+}
+
+/**
+ * Get course completion status with detailed information
+ */
+async function getCourseCompletionStatus(employeeEmail, courseName) {
+  try {
+    const course = await CommonCourse.findOne({ title: courseName });
+    if (!course) {
+      return {
+        isCompleted: false,
+        error: 'Course not found'
+      };
+    }
+    
+    const UserProgress = require('./models/Userprogress');
+    const userProgress = await UserProgress.findOne({ userEmail: employeeEmail, courseName });
+    if (!userProgress) {
+      return {
+        isCompleted: false,
+        completedModules: [],
+        totalModules: course.modules.length,
+        completedCount: 0,
+        courseModules: course.modules
+      };
+    }
+    
+    const totalModules = course.modules.length;
+    const completedModules = userProgress.completedModules;
+    const completedCount = completedModules.length;
+    const isCompleted = completedCount >= totalModules;
+    
+    return {
+      isCompleted,
+      completedModules,
+      totalModules,
+      completedCount,
+      courseModules: course.modules,
+      lastAccessedModule: userProgress.lastAccessedModule
+    };
+    
+  } catch (error) {
+    console.error('❌ Error getting course completion status:', error);
+    return {
+      isCompleted: false,
+      error: error.message
+    };
+  }
+}
+
 // ============================================================================
 // EXPORTS
 // ============================================================================
@@ -305,6 +411,10 @@ module.exports = {
   updateCourseProgress,
   getEmployeeProgress,
   getAllEmployeesProgress,
+  
+  // Course completion functions
+  isCourseCompleted,
+  getCourseCompletionStatus,
   
   // Migration utilities
   migrateExistingDocuments,

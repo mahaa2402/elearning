@@ -7,7 +7,7 @@ import staticCourseData from './coursedata'; // Renamed to avoid confusion
 const CourseDetailPage = () => {
   const [courseData, setCourseData] = useState(null);
   const { title } = useParams();
-  console.log("just foir fun",title)
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -136,7 +136,9 @@ const CourseDetailPage = () => {
                       onClick={() => {
                         // Find course ID from static data
                         let foundCourseId = null;
+                        
                         for (const [id, course] of Object.entries(staticCourseData)) {
+                          console.log(course.name)
                           if (course.name === title) {
                             foundCourseId = id;
                             break;

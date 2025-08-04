@@ -203,24 +203,32 @@ function LandingPage() {
             {!loading && !error && (
               <div className="courses-grid">
                 {courses && courses.length > 0 ? (
-                  courses.map((course) => (
-                    <div key={course.id} className="course-card">
+                  courses.map((course, index) => (
+                    <div key={course.id || course._id || index} className="course-card">
                       <div 
                         className="course-image" 
                         style={{
-                          backgroundImage: `url(${course.backgroundImage})`
+                          backgroundImage: course.backgroundImage ? `url(${course.backgroundImage})` : 'none'
                         }}
                       >
                         <div className="course-badges">
-                          <span className="course-modules-badge">{course.
-moduleCount} Modules</span>
-                          <span className={`course-level-badge ${course.level.toLowerCase()}`}>{course.level}</span>
+                          <span className="course-modules-badge">{course.modules ? course.modules.length : 0} Modules</span>
+                          <span className={`course-level-badge ${(course.level || 'beginner').toLowerCase()}`}>{course.level || 'Beginner'}</span>
                         </div>
                       </div>
                       <div className="course-content">
-                        <h3 className="course-title">{course.title}</h3>
-                        <p className="course-description">{course.description}</p>
-                        <Link to={`/coursedetailpage/${course.title}`} className="btn course-btn">Get Started</Link>
+                        <h3 className="course-title">{course.title || 'Untitled Course'}</h3>
+                        <p className="course-description">
+                          {course.description || 
+                           (course.title === 'ISP' ? 'Information Security Policy training covering data protection and security best practices.' :
+                            course.title === 'GDPR' ? 'General Data Protection Regulation compliance training for data privacy.' :
+                            course.title === 'POSH' ? 'Prevention of Sexual Harassment training for workplace safety.' :
+                            course.title === 'Factory Act' ? 'Factory Act compliance and safety regulations training.' :
+                            course.title === 'Welding' ? 'Welding techniques and safety training for industrial applications.' :
+                            course.title === 'CNC' ? 'Computer Numerical Control machine operation and programming training.' :
+                            'Professional training course designed to enhance workplace skills and compliance.')}
+                        </p>
+                        <Link to={`/coursedetailpage/${course.title || 'untitled'}`} className="btn course-btn">Get Started</Link>
                       </div>
                     </div>
                   ))

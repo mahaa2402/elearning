@@ -5,11 +5,17 @@ const { updateAssignedCourseProgress } = require('../assignedCourseUserProgressM
 // Save progress after a quiz is completed
 const saveQuizProgress = async (req, res) => {
   try {
+    console.log('🔍 DEBUG: saveQuizProgress called');
+    console.log('📝 Request body:', JSON.stringify(req.body, null, 2));
+    console.log('👤 User:', req.user);
+    
     // Accept userEmail and courseName for flexibility
     const userEmail = req.body.userEmail || req.user.email;
     const courseName = req.body.courseName;
     const completedModules = req.body.completedModules || [];
     const lastAccessedModule = req.body.lastAccessedModule;
+
+    console.log('📊 Extracted data:', { userEmail, courseName, lastAccessedModule });
 
     if (!userEmail || !courseName || !lastAccessedModule) {
       return res.status(400).json({ success: false, message: 'userEmail, courseName, and lastAccessedModule are required' });

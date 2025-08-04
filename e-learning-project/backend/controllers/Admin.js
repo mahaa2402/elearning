@@ -990,6 +990,46 @@ const createTestAssignment = async (req, res) => {
   }
 };
 
+// Test function to test common course progress update
+const testCommonCourseProgress = async (req, res) => {
+  try {
+    console.log('🧪 Testing common course progress update...');
+    
+    // Get first employee
+    const employee = await Employee.findOne({});
+    if (!employee) {
+      return res.status(400).json({ 
+        error: 'No employee found for testing'
+      });
+    }
+    
+    console.log('👤 Test employee:', employee.email);
+    
+    // Test updating progress for ISP course
+    const { updateCourseProgress } = require('../commonUserProgressManager');
+    
+    console.log('📝 Testing progress update for ISP course...');
+    const result = await updateCourseProgress(employee.email, 'ISP');
+    
+    console.log('✅ Test result:', result);
+    
+    res.json({ 
+      success: true, 
+      message: 'Common course progress test completed',
+      employee: employee.email,
+      course: 'ISP',
+      result: result
+    });
+
+  } catch (error) {
+    console.error('❌ Error testing common course progress:', error);
+    res.status(500).json({ 
+      error: 'Failed to test common course progress', 
+      message: error.message 
+    });
+  }
+};
+
 module.exports = {
   getEmployees,
   getEmployeesForAssignment,
@@ -1017,5 +1057,6 @@ module.exports = {
   getEmployeeAssignedCourseProgress,
   getAllEmployeesAssignedCourseProgress,
   testAssignedCourseCollection,
-  createTestAssignment
+  createTestAssignment,
+  testCommonCourseProgress
 };

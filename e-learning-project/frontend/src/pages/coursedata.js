@@ -45,7 +45,7 @@ const courseData = {
     }
   },
   "68789a19935761547602aef1": {
-    name: "posh",
+    name: "POSH",
     lessons: {
       "posh01": {
         title: "Overview & Legal Foundation of POSH Act",
@@ -125,7 +125,7 @@ const courseData = {
     }
   },
   "68885a71d486bba2975cdca4": {
-    name: "Factory Act, Regulations & Productivity Tools",
+    name: "Factory Act",
     lessons: {
       "Factory Act, Regulations & Productivity Tools01": {
         title: "Introduction to Factory Act",
@@ -166,7 +166,7 @@ const courseData = {
     }
     },
   "68885c86d486bba2975cdca6": {
-    name: "Welding, CNC, Fitting Skills",
+    name: "Welding",
     lessons: {
       "Welding, CNC, Fitting Skills01": {
         title: "Basics of Industrial Work Skills",
@@ -208,7 +208,7 @@ const courseData = {
   },
 "68885cf5d486bba2975cdca8": {
   
-  name: "Office Tools (MS Excel, Docs)",
+  name: "CNC",
   description: "This course offers a structured understanding of Microsoft Excel and Word.",
   level: "Intermediate",
   backgroundImage: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=400&h=2…",
