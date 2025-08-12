@@ -140,6 +140,34 @@ const CertificateDetails = () => {
         throw new Error('No employee ID provided');
       }
 
+      console.log(`🔍 Fetching certificates for employee ID: ${id}`);
+
+      // First, try to get all certificates to see what's available
+      const allCertificatesEndpoint = `http://localhost:5000/api/certificates/all`;
+      console.log(`🔍 Checking all certificates from: ${allCertificatesEndpoint}`);
+      
+      const allRes = await fetch(allCertificatesEndpoint, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        credentials: 'include'
+      });
+
+      if (allRes.ok) {
+        const allData = await allRes.json();
+        console.log(`📊 Total certificates in database: ${allData.count}`);
+        if (allData.certificates && allData.certificates.length > 0) {
+          console.log('📋 Available certificates:', allData.certificates.map(cert => ({
+            id: cert._id,
+            employeeId: cert.employeeId,
+            employeeEmail: cert.employeeEmail,
+            employeeName: cert.employeeName,
+            courseTitle: cert.courseTitle
+          })));
+        }
+      }
+
       // Use the correct endpoint for fetching all certificates for an employee
       const endpoint = `http://localhost:5000/api/certificates/${id}`;
       console.log(`Fetching certificates from: ${endpoint}`);
@@ -154,7 +182,7 @@ const CertificateDetails = () => {
 
       if (!res.ok) {
         if (res.status === 404) {
-          throw new Error('No certificates found for this employee');
+          throw new Error(`No certificates found for employee ID: ${id}. Please check if this employee has completed any courses.`);
         } else if (res.status === 401) {
           throw new Error('Authentication failed. Please log in again.');
         } else {
@@ -219,6 +247,23 @@ const CertificateDetails = () => {
       <div className="certificate-page">
         <div className="no-data-container">
           <p className="error-msg">📭 No certificates found for this employee</p>
+          <div className="debug-info" style={{ marginTop: '20px', padding: '15px', backgroundColor: '#f5f5f5', borderRadius: '8px', fontSize: '14px' }}>
+            <h4>🔧 Debug Information:</h4>
+            <p><strong>Employee ID:</strong> {id}</p>
+            <p><strong>Possible reasons:</strong></p>
+            <ul style={{ marginLeft: '20px', marginTop: '10px' }}>
+              <li>This employee hasn't completed any courses yet</li>
+              <li>Certificates haven't been generated for completed courses</li>
+              <li>The employee ID doesn't match the certificate records</li>
+              <li>Check the browser console for more detailed information</li>
+            </ul>
+            <p><strong>Next steps:</strong></p>
+            <ul style={{ marginLeft: '20px', marginTop: '10px' }}>
+              <li>Verify the employee has completed courses</li>
+              <li>Check if certificates were generated for completed courses</li>
+              <li>Ensure the employee ID matches the certificate database</li>
+            </ul>
+          </div>
           <button className="back-button" onClick={() => navigate(-1)}>⬅ Go Back</button>
         </div>
       </div>

@@ -1,5 +1,19 @@
 .App {
   text-align: center;
+  font-size: 16px; /* Base font size for the app */
+}
+
+/* Global font size improvements */
+h1, h2, h3, h4, h5, h6 {
+  font-size: 1.2em; /* Slightly larger headings */
+}
+
+p, span, div {
+  font-size: 1em; /* Consistent base size */
+}
+
+button, input, select, textarea {
+  font-size: 1em; /* Consistent form element sizes */
 }
 
 .App-logo {

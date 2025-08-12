@@ -81,6 +81,16 @@ function LandingPage() {
     };
   }, []);
 
+ const imageMap = {
+  ISP: "isp.jpeg",
+  GDPR: "gdpr.jpg", 
+  POSH: "posh.png",
+  "Factory Act": "hsi.jpg",
+  Welding: "course.jpg",
+  CNC: "courseimg.jpeg"
+};
+
+
   // Handle scroll detection for non-logged-in users
   useEffect(() => {
     if (isLoggedIn) {
@@ -205,12 +215,21 @@ function LandingPage() {
                 {courses && courses.length > 0 ? (
                   courses.map((course, index) => (
                     <div key={course.id || course._id || index} className="course-card">
-                      <div 
-                        className="course-image" 
-                        style={{
-                          backgroundImage: course.backgroundImage ? `url(${course.backgroundImage})` : 'none'
-                        }}
-                      >
+                 <div 
+  className="course-image" 
+  style={{
+    backgroundImage: imageMap[course.title] 
+      ? `url(${process.env.PUBLIC_URL}/${imageMap[course.title]})` 
+      : `url(${process.env.PUBLIC_URL}/course.jpg)`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
+  }}
+>
+                  {console.log('Course title:', course.title, 'Image path:', imageMap[course.title] ? `${process.env.PUBLIC_URL}/${imageMap[course.title]}` : `${process.env.PUBLIC_URL}/course.jpg`)}
+
+
+                      
                         <div className="course-badges">
                           <span className="course-modules-badge">{course.modules ? course.modules.length : 0} Modules</span>
                           <span className={`course-level-badge ${(course.level || 'beginner').toLowerCase()}`}>{course.level || 'Beginner'}</span>
@@ -332,7 +351,7 @@ function LandingPage() {
                 <div className="social-links">
                   <a href="https://www.linkedin.com" className="social-link" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                     </svg>
                   </a>
                   <a href="https://www.twitter.com" className="social-link" aria-label="Twitter" target="_blank" rel="noopener noreferrer">
