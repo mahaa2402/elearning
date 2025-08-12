@@ -25,6 +25,7 @@
 .auth-container h2 {
   margin-bottom: 20px;
   color: #333;
+  font-size: 2rem; /* Added font size */
 }
 
 .auth-container form {
@@ -35,7 +36,7 @@
 
 .auth-container input {
   padding: 12px;
-  font-size: 16px;
+  font-size: 18px; /* Increased from 16px */
   border: 1px solid #ccc;
   border-radius: 6px;
   box-sizing: border-box;
@@ -50,7 +51,7 @@
 
 .auth-container button {
   padding: 12px;
-  font-size: 16px;
+  font-size: 18px; /* Increased from 16px */
   color: #fff;
   background: linear-gradient(to right, #007bff, #0056b3);
   border: none;

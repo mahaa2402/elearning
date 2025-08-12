@@ -40,7 +40,7 @@
 }
 
 .logo {
-  font-size: 28px;
+  font-size: 32px; /* Increased from 28px */
   font-weight: 800;
   color: #667eea;
   line-height: 1;
@@ -48,7 +48,7 @@
 }
 
 .logo-subtitle {
-  font-size: 12px;
+  font-size: 14px; /* Increased from 12px */
   color: #666;
   margin-top: -2px;
   font-weight: 500;
@@ -64,7 +64,7 @@
   text-decoration: none;
   color: #555;
   font-weight: 500;
-  font-size: 15px;
+  font-size: 17px; /* Increased from 15px */
   transition: color 0.3s ease;
   position: relative;
 }
@@ -303,7 +303,7 @@
   padding: 15px 15px 15px 50px;
   border: 2px solid #e0e0e0;
   border-radius: 12px;
-  font-size: 16px;
+  font-size: 18px; /* Increased from 16px */
   transition: all 0.3s ease;
   background: white;
 }
@@ -364,7 +364,7 @@
 }
 
 .section-title {
-  font-size: 24px;
+  font-size: 28px; /* Increased from 24px */
   font-weight: 700;
   color: #333;
   margin: 0;
@@ -510,7 +510,7 @@
 }
 
 .course-title {
-  font-size: 18px;
+  font-size: 20px; /* Increased from 18px */
   font-weight: 600;
   color: #333;
   margin: 0 0 15px 0;
@@ -537,14 +537,14 @@
 }
 
 .instructor-name {
-  font-size: 14px;
+  font-size: 16px; /* Increased from 14px */
   font-weight: 600;
   color: #333;
   margin-bottom: 2px;
 }
 
 .instructor-role {
-  font-size: 12px;
+  font-size: 14px; /* Increased from 12px */
   color: #666;
 }
 
@@ -563,7 +563,7 @@
 .courses-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 16px; /* Increased from 14px */
 }
 
 .table-header {
@@ -575,7 +575,7 @@
   text-align: left;
   font-weight: 600;
   color: #555;
-  font-size: 12px;
+  font-size: 14px; /* Increased from 12px */
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border-bottom: 2px solid #e0e0e0;

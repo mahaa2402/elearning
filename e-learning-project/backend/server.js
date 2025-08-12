@@ -160,19 +160,7 @@ const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
 
-// Example using Express.js
-app.get('/api/certificates/:id', async (req, res) => {
-  const { id } = req.params;
-  try {
-    const certificate = await Certificate.findOne({ employeeId: id });
-    if (!certificate) {
-      return res.status(404).json({ message: 'Certificate not found' });
-    }
-    res.json(certificate);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+
 
 
 // Graceful shutdown

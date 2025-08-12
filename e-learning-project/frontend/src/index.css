@@ -5,6 +5,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-size: 25px; /* Increased base font size from default 14px */
+  line-height: 1.6; /* Better line height for readability */
 }
 
 code {

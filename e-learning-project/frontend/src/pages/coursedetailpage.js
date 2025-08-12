@@ -10,6 +10,16 @@ const CourseDetailPage = () => {
   
   const navigate = useNavigate();
 
+  // Add the same imageMap as landing page
+  const imageMap = {
+    ISP: "isp.jpeg",
+    GDPR: "isp.jpeg", 
+    POSH: "posh.png",
+    "Factory Act": "hsi.jpg",
+    Welding: "course.jpg",
+    CNC: "courseimg.jpeg"
+  };
+
   useEffect(() => {
     const fetchCourse = async () => {
       try {
@@ -46,9 +56,11 @@ const CourseDetailPage = () => {
     }
     
     if (foundCourseId) {
-      // Navigate to coursedetailpage/[courseId]/MODULE/1
-      console.log("sab",foundCourseId)
-      navigate(`/course/${foundCourseId}/lesson/1`);
+      // Get the first lesson key from the course data
+      const course = staticCourseData[foundCourseId];
+      const firstLessonKey = Object.keys(course.lessons)[0];
+      console.log("sab",foundCourseId, "First lesson key:", firstLessonKey);
+      navigate(`/course/${foundCourseId}/lesson/${firstLessonKey}`);
     } else {
       console.error('Course not found in static data');
       alert('Course not found!');
@@ -77,15 +89,25 @@ const CourseDetailPage = () => {
               <a href="#" className="course-detail-nav-link">About</a>
             </nav>
             <div className="course-detail-header-actions">
-              <button className="course-detail-btn course-detail-btn-primary">Login</button>
-              <button className="course-detail-btn course-detail-btn-secondary">Sign Up</button>
+            
             </div>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="course-detail-hero">
+      <section 
+        className="course-detail-hero"
+        style={{
+          backgroundImage: `linear-gradient(135deg, rgba(250, 174, 56, 0.9) 0%, rgba(244, 140, 6, 0.9) 100%), url(${imageMap[courseData.title] 
+            ? `${process.env.PUBLIC_URL}/${imageMap[courseData.title]}` 
+            : `${process.env.PUBLIC_URL}/course.jpg`})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        {console.log('Hero background - Title:', courseData.title, 'Background image:', imageMap[courseData.title] ? `${process.env.PUBLIC_URL}/${imageMap[courseData.title]}` : `${process.env.PUBLIC_URL}/course.jpg`)}
         <div className="course-detail-hero-container">
           <div className="course-detail-hero-content">
             <div className="course-detail-info">
@@ -101,10 +123,14 @@ const CourseDetailPage = () => {
             </div>
 
             <div className="course-detail-thumbnail">
-              <img src={courseData.backgroundImage || "/api/placeholder/400/250"} alt={courseData.title} />
+              {console.log('Course detail - Title:', courseData.title, 'Image path:', imageMap[courseData.title] ? `${process.env.PUBLIC_URL}/${imageMap[courseData.title]}` : `${process.env.PUBLIC_URL}/course.jpg`)}
+              <img 
+                src={imageMap[courseData.title] 
+                  ? `${process.env.PUBLIC_URL}/${imageMap[courseData.title]}` 
+                  : `${process.env.PUBLIC_URL}/course.jpg`} 
+                alt={courseData.title} 
+              />
               <div className="course-detail-play-overlay">
-                <Play className="course-detail-play-icon" />
-                <span>Preview Course</span>
               </div>
             </div>
           </div>
@@ -146,8 +172,10 @@ const CourseDetailPage = () => {
                         }
                         
                         if (foundCourseId) {
-                          // Navigate to specific lesson (index + 1 since lessons start from 1)
-                          navigate(`/course/${foundCourseId}/lesson/1`);
+                          // Get the first lesson key from the course data
+                          const course = staticCourseData[foundCourseId];
+                          const firstLessonKey = Object.keys(course.lessons)[0];
+                          navigate(`/course/${foundCourseId}/lesson/${firstLessonKey}`);
                         } else {
                           alert('Course not found!');
                         }

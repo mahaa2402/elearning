@@ -68,6 +68,13 @@ async function createCourses() {
             duration: 90,
             description: 'GDPR data processing principles.',
             lessons: 4
+          },
+          {
+            m_id: 'GDPR04',
+            name: 'Compliance and Enforcement',
+            duration: 90,
+            description: 'GDPR compliance and enforcement.',
+            lessons: 4
           }
         ]
       },
@@ -108,24 +115,31 @@ async function createCourses() {
         title: 'Factory Act',
         modules: [
           {
-            m_id: 'FACT01',
+            m_id: 'FACTORY01',
             name: 'Factory Act Basics',
             duration: 60,
             description: 'Introduction to Factory Act regulations.',
             lessons: 4
           },
           {
-            m_id: 'FACT02',
+            m_id: 'FACTORY02',
             name: 'Safety Regulations',
             duration: 90,
             description: 'Understanding safety requirements.',
             lessons: 4
           },
           {
-            m_id: 'FACT03',
+            m_id: 'FACTORY03',
             name: 'Compliance Requirements',
             duration: 90,
             description: 'Meeting compliance standards.',
+            lessons: 4
+          },
+          {
+            m_id: 'FACTORY04',
+            name: 'Employee Rights & Grievance Redressal',
+            duration: 90,
+            description: 'Employee rights and grievance procedures.',
             lessons: 4
           }
         ]
@@ -134,24 +148,31 @@ async function createCourses() {
         title: 'Welding',
         modules: [
           {
-            m_id: 'WELD01',
+            m_id: 'WELDING01',
             name: 'Welding Fundamentals',
             duration: 60,
             description: 'Basic welding principles and safety.',
             lessons: 4
           },
           {
-            m_id: 'WELD02',
+            m_id: 'WELDING02',
             name: 'Welding Techniques',
             duration: 90,
             description: 'Different welding techniques and applications.',
             lessons: 4
           },
           {
-            m_id: 'WELD03',
+            m_id: 'WELDING03',
             name: 'Quality Control',
             duration: 90,
             description: 'Ensuring welding quality and standards.',
+            lessons: 4
+          },
+          {
+            m_id: 'WELDING04',
+            name: 'Fitting Techniques & Maintenance',
+            duration: 90,
+            description: 'Fitting techniques and tool maintenance.',
             lessons: 4
           }
         ]
@@ -178,6 +199,13 @@ async function createCourses() {
             name: 'Operation and Maintenance',
             duration: 90,
             description: 'CNC machine operation and maintenance.',
+            lessons: 4
+          },
+          {
+            m_id: 'CNC04',
+            name: 'Advanced CNC Operations',
+            duration: 90,
+            description: 'Advanced CNC operations and troubleshooting.',
             lessons: 4
           }
         ]
