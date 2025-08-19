@@ -76,7 +76,81 @@ const getUserProgress = async (req, res) => {
   }
 };
 
+// Get user progress with lesson unlocking information
+const getUserProgressWithUnlocking = async (req, res) => {
+  try {
+    const userEmail = req.query.userEmail || req.user.email;
+    const courseName = req.query.courseName;
+    const courseId = req.query.courseId;
+    
+    if (!userEmail || !courseName) {
+      return res.status(400).json({ success: false, message: 'userEmail and courseName are required' });
+    }
+
+    // Get user progress
+    const progress = await UserProgress.findOne({ userEmail, courseName });
+    
+    // Get course data from database
+    const Course = require('../models/common_courses');
+    const course = await Course.findOne({ title: courseName });
+    
+    if (!course) {
+      return res.status(404).json({ success: false, message: 'Course not found' });
+    }
+
+    const lessons = course.modules || [];
+    const completedModules = progress ? progress.completedModules : [];
+    const completedModuleIds = completedModules.map(mod => mod.m_id);
+    
+    // Find the highest completed module number
+    let highestCompletedIndex = -1;
+    lessons.forEach((lesson, index) => {
+      if (completedModuleIds.includes(lesson.m_id)) {
+        highestCompletedIndex = index;
+      }
+    });
+    
+    // Determine which lessons and quizzes should be unlocked
+    const lessonUnlockStatus = lessons.map((lesson, index) => {
+      const lessonId = lesson.m_id;
+      const isCompleted = completedModuleIds.includes(lessonId);
+      
+      // Lesson is unlocked if:
+      // 1. It's the first lesson (index 0) OR
+      // 2. The previous lesson has been completed
+      const isUnlocked = index === 0 || (index > 0 && completedModuleIds.includes(lessons[index - 1].m_id));
+      
+      // Quiz is available if:
+      // 1. It's the first quiz (index 0) OR
+      // 2. The previous quiz has been completed
+      const canTakeQuiz = index === 0 || (index > 0 && completedModuleIds.includes(lessons[index - 1].m_id));
+      
+      console.log(`🔍 Module ${lessonId}: isUnlocked=${isUnlocked}, isCompleted=${isCompleted}, canTakeQuiz=${canTakeQuiz}`);
+      
+      return {
+        lessonId,
+        lessonTitle: lesson.name,
+        isUnlocked,
+        isCompleted,
+        canTakeQuiz
+      };
+    });
+
+    res.status(200).json({ 
+      success: true, 
+      progress,
+      lessonUnlockStatus,
+      totalLessons: lessons.length,
+      completedLessons: completedModules.length
+    });
+  } catch (error) {
+    console.error('Error getting user progress with unlocking:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch progress with unlocking info', error: error.message });
+  }
+};
+
 module.exports = {
   saveQuizProgress,
-  getUserProgress
+  getUserProgress,
+  getUserProgressWithUnlocking
 };

@@ -39,7 +39,7 @@ const mongoose = require('mongoose');
 const quizSchema = new mongoose.Schema({
   courseId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Course',
+    ref: 'CommonCourse',
     required: true
   },
   mo_id: {
@@ -66,8 +66,8 @@ const quizSchema = new mongoose.Schema({
 
 // Validate that mo_id exists in the course's modules
 quizSchema.pre('save', async function (next) {
-  const Course = mongoose.model('Course');
-  const course = await Course.findById(this.courseId);
+  const Common_Course = mongoose.model('CommonCourse');
+  const course = await Common_Course.findById(this.courseId);
 
   if (!course) {
     return next(new Error('Invalid courseId: Course not found'));
@@ -82,31 +82,41 @@ quizSchema.pre('save', async function (next) {
   next();
 });
 
-quizSchema.statics.getQuestionsByCourseAndModule = async function (courseId, moduleId) {
-  return this.findOne({ courseId, mo_id: moduleId }, { questions: 1, _id: 0 });
-};
+// quizSchema.statics.getQuestionsByCourseAndModule = async function (courseId, moduleId) {
+//   return this.findOne({ courseId, mo_id: moduleId }, { questions: 1, _id: 0 });
+// };
 
 // New method to get questions in batches
 quizSchema.statics.getQuestionsByCourseAndModuleBatch = async function (courseId, moduleId, attemptNumber ) { //attemptnumber ==1 changeddd
+  console.log('🔍 getQuestionsByCourseAndModuleBatch called with:', { courseId, moduleId, attemptNumber });
+  
   const quiz = await this.findOne({ courseId, mo_id: moduleId }, { questions: 1, _id: 0 });
+  console.log('🔍 Found quiz:', quiz ? 'Yes' : 'No');
   
   if (!quiz || !quiz.questions) {
+    console.log('❌ No quiz or questions found');
     return null;
   }
 
   const questions = quiz.questions;
+  console.log('📚 Total questions in quiz:', questions.length);
   
   // For first attempt, return first 5 questions
   if (attemptNumber === 1) {
-    return { questions: questions.slice(0, 5) };
+    const result = { questions: questions.slice(0, 5) };
+    console.log('✅ Returning first 5 questions for attempt 1');
+    return result;
   }
   
   // For retake (attempt 2), return next 5 questions (questions 6-10)
   if (attemptNumber === 2) {
-    return { questions: questions.slice(5, 10) };
+    const result = { questions: questions.slice(5, 10) };
+    console.log('✅ Returning questions 6-10 for attempt 2');
+    return result;
   }
   
   // For any other attempt, return all questions
+  console.log('✅ Returning all questions for attempt', attemptNumber);
   return { questions: questions };
 };
 
