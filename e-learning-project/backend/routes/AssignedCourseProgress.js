@@ -185,7 +185,11 @@ router.get('/check-assignment/:courseName', authenticateToken, async (req, res) 
     }
 
     const { courseName } = req.params;
+    console.log(`🔍 Checking assignment for course: "${courseName}" and employee: ${req.user.email}`);
+    
     const isAssigned = await isCourseAssignedToEmployee(req.user.email, courseName);
+    console.log(`📊 Assignment result: ${isAssigned}`);
+    
     res.json({ success: true, isAssigned });
   } catch (error) {
     console.error('Error checking course assignment:', error);

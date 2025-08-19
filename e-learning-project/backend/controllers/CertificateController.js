@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const UserProgress = require('../models/Userprogress');
 const CommonCourse = require('../models/common_courses');
+const Course = require('../models/Course');
+const AssignedCourseUserProgress = require('../models/AssignedCourseUserProgress');
 
 
 // Certificate Schema - defined in the controller file as requested
@@ -39,61 +41,130 @@ const checkCourseCompletion = async (employeeEmail, courseName) => {
   try {
     console.log(`🔍 Checking if course "${courseName}" is completed for ${employeeEmail}`);
     
-    // Get the course details to know total modules
-    let course = await CommonCourse.findOne({ title: courseName });
+    // First, try to find the course in assigned courses (admin_courses)
+    let course = await Course.findOne({ name: courseName });
+    let isAssignedCourse = false;
     
-    // If not found, try alternative course names
-    if (!course) {
-      if (courseName === 'Factory Act') {
-        course = await CommonCourse.findOne({ title: 'Factory Act' });
-      } else if (courseName === 'Welding') {
-        course = await CommonCourse.findOne({ title: 'Welding' });
-      } else if (courseName === 'CNC') {
-        course = await CommonCourse.findOne({ title: 'CNC' });
+    if (course) {
+      console.log(`📚 Found course "${courseName}" in admin courses (assigned course)`);
+      isAssignedCourse = true;
+    } else {
+      // If not found in admin courses, try common courses
+      course = await CommonCourse.findOne({ title: courseName });
+      
+      // If not found, try alternative course names
+      if (!course) {
+        if (courseName === 'Factory Act') {
+          course = await CommonCourse.findOne({ title: 'Factory Act' });
+        } else if (courseName === 'Welding') {
+          course = await CommonCourse.findOne({ title: 'Welding' });
+        } else if (courseName === 'CNC') {
+          course = await CommonCourse.findOne({ title: 'CNC' });
+        }
       }
-    }
-    
-    if (!course) {
-      // Debug: List all available courses
-      const allCourses = await CommonCourse.find({}, 'title');
-      console.log(`⚠️ Course "${courseName}" not found in common courses`);
-      console.log(`📋 Available courses:`, allCourses.map(c => c.title));
-      return {
-        isCompleted: false,
-        error: 'Course not found'
-      };
+      
+      if (!course) {
+        // Debug: List all available courses
+        const allAdminCourses = await Course.find({}, 'name');
+        const allCommonCourses = await CommonCourse.find({}, 'title');
+        console.log(`⚠️ Course "${courseName}" not found in any course collection`);
+        console.log(`📋 Available admin courses:`, allAdminCourses.map(c => c.name));
+        console.log(`📋 Available common courses:`, allCommonCourses.map(c => c.title));
+        return {
+          isCompleted: false,
+          error: 'Course not found'
+        };
+      }
     }
     
     const totalModules = course.modules.length;
     console.log(`📊 Total modules in ${courseName}: ${totalModules}`);
     
-    // Get user progress for this course
-    const userProgress = await UserProgress.findOne({ userEmail: employeeEmail, courseName });
-    if (!userProgress) {
-      console.log(`📊 No progress found for ${employeeEmail} in ${courseName}`);
+    if (isAssignedCourse) {
+      // For assigned courses, check AssignedCourseUserProgress
+      const assignedProgress = await AssignedCourseUserProgress.findOne({ employeeEmail });
+      if (!assignedProgress) {
+        console.log(`📊 No assigned progress found for ${employeeEmail}`);
+        return {
+          isCompleted: false,
+          completedModules: [],
+          totalModules,
+          completedCount: 0,
+          courseModules: course.modules
+        };
+      }
+      
+      // Check if course is assigned to this employee
+      const courseAssignment = assignedProgress.courseAssignments.find(
+        assignment => assignment.courseName === courseName
+      );
+      
+      if (!courseAssignment) {
+        console.log(`📊 Course "${courseName}" is not assigned to ${employeeEmail}`);
+        return {
+          isCompleted: false,
+          completedModules: [],
+          totalModules,
+          completedCount: 0,
+          courseModules: course.modules
+        };
+      }
+      
+      const completedModulesCount = assignedProgress.assignedCourseProgress.get(courseName) || 0;
+      console.log(`📊 Completed modules: ${completedModulesCount}/${totalModules}`);
+      
+      const isCompleted = completedModulesCount >= totalModules;
+      console.log(`✅ Course completion status: ${isCompleted ? 'COMPLETED' : 'IN PROGRESS'}`);
+      
+      // Create completed modules array for certificate
+      const completedModules = [];
+      for (let i = 0; i < completedModulesCount; i++) {
+        if (course.modules[i]) {
+          completedModules.push({
+            m_id: course.modules[i].title || `Module ${i + 1}`,
+            title: course.modules[i].title || `Module ${i + 1}`
+          });
+        }
+      }
+      
       return {
-        isCompleted: false,
-        completedModules: [],
+        isCompleted,
+        completedModules,
         totalModules,
-        completedCount: 0,
-        courseModules: course.modules
+        completedCount: completedModulesCount,
+        courseModules: course.modules,
+        isAssignedCourse: true
+      };
+      
+    } else {
+      // For common courses, check UserProgress
+      const userProgress = await UserProgress.findOne({ userEmail: employeeEmail, courseName });
+      if (!userProgress) {
+        console.log(`📊 No progress found for ${employeeEmail} in ${courseName}`);
+        return {
+          isCompleted: false,
+          completedModules: [],
+          totalModules,
+          completedCount: 0,
+          courseModules: course.modules
+        };
+      }
+      
+      const completedModulesCount = userProgress.completedModules.length;
+      console.log(`📊 Completed modules: ${completedModulesCount}/${totalModules}`);
+      
+      const isCompleted = completedModulesCount >= totalModules;
+      console.log(`✅ Course completion status: ${isCompleted ? 'COMPLETED' : 'IN PROGRESS'}`);
+      
+      return {
+        isCompleted,
+        completedModules: userProgress.completedModules,
+        totalModules,
+        completedCount: completedModulesCount,
+        courseModules: course.modules,
+        lastAccessedModule: userProgress.lastAccessedModule
       };
     }
-    
-    const completedModulesCount = userProgress.completedModules.length;
-    console.log(`📊 Completed modules: ${completedModulesCount}/${totalModules}`);
-    
-    const isCompleted = completedModulesCount >= totalModules;
-    console.log(`✅ Course completion status: ${isCompleted ? 'COMPLETED' : 'IN PROGRESS'}`);
-    
-    return {
-      isCompleted,
-      completedModules: userProgress.completedModules,
-      totalModules,
-      completedCount: completedModulesCount,
-      courseModules: course.modules,
-      lastAccessedModule: userProgress.lastAccessedModule
-    };
     
   } catch (error) {
     console.error('❌ Error checking course completion:', error);
@@ -110,9 +181,11 @@ const checkCourseCompletion = async (employeeEmail, courseName) => {
 const generateCertificate = async (employeeEmail, courseName, employeeName, employeeId) => {
   try {
     console.log(`🎓 Generating certificate for ${employeeEmail} - ${courseName}`);
+    console.log(`👤 Employee details:`, { employeeName, employeeId });
     
     // Check if course is completed
     const completionStatus = await checkCourseCompletion(employeeEmail, courseName);
+    console.log(`📊 Completion status:`, completionStatus);
     
     if (!completionStatus.isCompleted) {
       return {
@@ -128,7 +201,10 @@ const generateCertificate = async (employeeEmail, courseName, employeeName, empl
       courseTitle: courseName
     });
     
+    console.log(`🔍 Existing certificate check:`, existingCertificate ? 'Found' : 'Not found');
+    
     if (existingCertificate) {
+      console.log(`✅ Certificate already exists: ${existingCertificate.certificateId}`);
       return {
         success: true,
         message: 'Certificate already exists for this course',
@@ -144,10 +220,21 @@ const generateCertificate = async (employeeEmail, courseName, employeeName, empl
       employeeEmail: employeeEmail,
       courseTitle: courseName,
       courseId: courseName,
-      completedModules: completionStatus.completedModules.map(mod => mod.m_id),
+      completedModules: completionStatus.completedModules.map(mod => 
+        typeof mod === 'string' ? mod : (mod.m_id || mod.title)
+      ),
       totalModules: completionStatus.totalModules,
       completionDate: new Date(),
       date: new Date().toLocaleDateString()
+    });
+    
+    console.log(`💾 Saving certificate to database...`);
+    console.log(`📝 Certificate data:`, {
+      employeeName: newCertificate.employeeName,
+      employeeEmail: newCertificate.employeeEmail,
+      courseTitle: newCertificate.courseTitle,
+      completedModules: newCertificate.completedModules,
+      totalModules: newCertificate.totalModules
     });
     
     await newCertificate.save();

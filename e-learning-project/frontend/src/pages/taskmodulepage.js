@@ -9,6 +9,7 @@ const TaskModulePage = () => {
   const navigate = useNavigate();
   const [courseDetails, setCourseDetails] = useState(state?.courseDetails || null);
   const [selectedModule, setSelectedModule] = useState(state?.selectedModule || null);
+  const [taskDetails, setTaskDetails] = useState(state?.taskDetails || null);
   const [currentVideo, setCurrentVideo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -147,7 +148,8 @@ const TaskModulePage = () => {
                          navigate('/assignedquizpage', {
                            state: {
                              courseDetails: courseDetails,
-                             selectedModule: module
+                             selectedModule: module,
+                             taskDetails: taskDetails
                            }
                          });
                        }}
