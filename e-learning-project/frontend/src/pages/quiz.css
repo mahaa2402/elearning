@@ -162,6 +162,43 @@ body {
   background: rgba(255, 255, 255, 0.3);
 }
 
+/* Quiz Access Denied Styles */
+.quiz-access-denied {
+  text-align: center;
+  color: white;
+}
+
+.quiz-access-denied h2 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #ff6b6b;
+}
+
+.quiz-access-denied p {
+  font-size: 1.125rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.quiz-access-denied .nav-button {
+  background: linear-gradient(135deg, #f97316 0%, #dc2626 100%);
+  color: white;
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
+  border-radius: 0.75rem;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.quiz-access-denied .nav-button:hover {
+  background: linear-gradient(135deg, #ea580c 0%, #b91c1c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
 /* Results Page Styles */
 .results-container {
   min-height: 100vh;

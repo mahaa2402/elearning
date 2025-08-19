@@ -20,6 +20,7 @@ if (thisLesson === currentLevel + 1) {
 
 const Quiz = () => {
   const { courseId, mo_id } = useParams();
+  const navigate = useNavigate();
 
   // Function to determine course name based on module ID or course ID
   const getCourseName = () => {
@@ -78,10 +79,10 @@ const Quiz = () => {
     const finalModules = {
       'ISP': 4,        // ISP04 is final
       'POSH': 4,       // POSH04 is final
-      'GDPR': 3,       // GDPR03 is final
-      'Factory Act': 3, // FACT03 is final
-      'Welding': 3,    // WELD03 is final
-      'CNC': 3         // CNC03 is final
+      'GDPR': 4,       // GDPR04 is final
+      'Factory Act': 4, // FACTORY04 is final
+      'Welding': 4,    // WELDING04 is final
+      'CNC': 4         // CNC04 is final
     };
     
     const isFinal = moduleNumber === finalModules[courseName];
@@ -100,16 +101,119 @@ const Quiz = () => {
   const [attemptNumber, setAttemptNumber] = useState(1);
   const [hasFailedOnce, setHasFailedOnce] = useState(false);
   const [isCourseCompleted, setIsCourseCompleted] = useState(false); // New state for course completion
+  const [quizAccessAllowed, setQuizAccessAllowed] = useState(false);
+  const [accessChecking, setAccessChecking] = useState(true);
+
+  // Check if user is allowed to take this quiz
+  const checkQuizAccess = async () => {
+    try {
+      setAccessChecking(true);
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const userEmail = localStorage.getItem('employeeEmail');
+      
+      if (!token || !userEmail) {
+        console.log('No token or email found, allowing access');
+        setQuizAccessAllowed(true);
+        setAccessChecking(false);
+        return;
+      }
+
+      const courseName = getCourseName();
+      
+      // Map lesson keys to module IDs for backend compatibility
+      const getModuleIdFromLessonKey = (lessonKey) => {
+        const moduleMapping = {
+          'ISP01': 'ISP01',
+          'ISP02': 'ISP02', 
+          'ISP03': 'ISP03',
+          'ISP04': 'ISP04',
+          'POSH01': 'POSH01',
+          'POSH02': 'POSH02',
+          'POSH03': 'POSH03', 
+          'POSH04': 'POSH04',
+          'GDPR01': 'GDPR01',
+          'GDPR02': 'GDPR02',
+          'GDPR03': 'GDPR03',
+          'GDPR04': 'GDPR04',
+          'FACT01': 'FACT01',
+          'FACT02': 'FACT02',
+          'FACT03': 'FACT03',
+          'FACT04': 'FACT04',
+          'WELD01': 'WELD01',
+          'WELD02': 'WELD02',
+          'WELD03': 'WELDING03',
+          'WELD04': 'WELDING04',
+          'CNC01': 'CNC01',
+          'CNC02': 'CNC02',
+          'CNC03': 'CNC03',
+          'CNC04': 'CNC04'
+        };
+        return moduleMapping[lessonKey] || lessonKey;
+      };
+
+      const moduleId = getModuleIdFromLessonKey(mo_id);
+      
+      const response = await fetch(`http://localhost:5000/api/progress/get-with-unlocking?userEmail=${userEmail}&courseName=${courseName}&courseId=${courseId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('🔍 Quiz access check - unlock status:', data.lessonUnlockStatus);
+        const lessonStatus = data.lessonUnlockStatus.find(lesson => lesson.lessonId === moduleId);
+        console.log('🔍 Quiz access check - lesson status for', moduleId, ':', lessonStatus);
+        
+        if (lessonStatus) {
+          console.log('🔍 Quiz access check - canTakeQuiz:', lessonStatus.canTakeQuiz);
+          setQuizAccessAllowed(lessonStatus.canTakeQuiz);
+        } else {
+          // If lesson not found in progress, allow access (fallback)
+          console.log('🔍 Quiz access check - lesson not found, allowing access');
+          setQuizAccessAllowed(true);
+        }
+      } else {
+        console.log('Failed to check quiz access, allowing access');
+        setQuizAccessAllowed(true);
+      }
+    } catch (error) {
+      console.error('Error checking quiz access:', error);
+      setQuizAccessAllowed(true); // Allow access on error
+    } finally {
+      setAccessChecking(false);
+    }
+  };
+
+  // Check quiz access on component mount
+  useEffect(() => {
+    checkQuizAccess();
+  }, [courseId, mo_id]);
 
   // Fetch questions from backend
   const fetchQuestions = async (attempt) => {
     try {
       setLoading(true);
       setError(null);
-
-      console.log("Fetching questions...");
+      console.log("🔍 Fetching questions for attempt:", attempt);
+      console.log("🔍 Fetching questions...");
+      console.log("📝 Request details:", {
+        method: "POST",
+        url: "http://localhost:5000/api/courses/questions",
+        courseId: courseId,
+        moduleId: mo_id,
+        attemptNumber: attempt
+      });
 
       const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      
+      const requestBody = {
+        courseId: courseId,
+        moduleId: mo_id,      
+        attemptNumber: attempt
+      };
+      
+      console.log("📤 Request body:", JSON.stringify(requestBody, null, 2));
       
       const response = await fetch("http://localhost:5000/api/courses/questions", {
         method: "POST",
@@ -117,11 +221,7 @@ const Quiz = () => {
           "Content-Type": "application/json",
           ...(token && { "Authorization": `Bearer ${token}` })
         },
-        body: JSON.stringify({
-          courseId: courseId,
-          moduleId: mo_id,      
-          attemptNumber: attempt
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -165,10 +265,11 @@ const Quiz = () => {
 
   // Fetch questions on component mount
   useEffect(() => {
-    if (courseId && mo_id) {
+    console.log("sarvaaaaaaaaaaaaaaaaaaaaaaa",mo_id, courseId)
+    if (courseId && mo_id && quizAccessAllowed) {
       fetchQuestions(attemptNumber);
     }
-  }, [courseId, mo_id]);
+  }, [courseId, mo_id, quizAccessAllowed]);
 
   const handleAnswerSelect = (questionId, optionId) => {
     setSelectedAnswers(prev => ({
@@ -333,6 +434,40 @@ const Quiz = () => {
       setError('Failed to load retake questions. Please try again.');
     }
   };
+
+  // Access denied state
+  if (accessChecking) {
+    return (
+      <div className="quiz-container">
+        <div className="quiz-card">
+          <div className="quiz-header">
+            <h2>Checking Quiz Access...</h2>
+            <p>Please wait while we verify your progress.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Access denied state
+  if (!quizAccessAllowed) {
+    return (
+      <div className="quiz-container">
+        <div className="quiz-card">
+          <div className="quiz-access-denied">
+            <h2>🔒 Quiz Locked</h2>
+            <p>You need to complete the previous lesson before taking this quiz.</p>
+            <button 
+              onClick={() => navigate(`/course/${courseId}/lesson/${mo_id}`)}
+              className="nav-button primary"
+            >
+              Go to Lesson
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Loading state
   if (loading) {

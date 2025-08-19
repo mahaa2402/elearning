@@ -41,57 +41,43 @@ const Login = () => {
 
         alert(res.data.message || 'Login successful!');
 
-        // ✅ ✅ ✅ Move fetch here — AFTER email is stored
-        fetch(`http://localhost:5000/api/progress/${userData.email}`)
-          .then(res => {
-            if (!res.ok) throw new Error("Failed to fetch progress");
-            return res.json();
-          })
-          .then(data => {
-            // Use new progress structure if available, fallback to old structure
-            const levelCount = data.data?.currentLevel || data.levelCount || 0;
-            localStorage.setItem("levelCleared", levelCount);
-          })
-          .catch(err => {
-            console.error("Error fetching progress:", err);
-          });
-
-        // Fetch user progress after login
-        const courseName = 'ISP Basics'; // or dynamic course name if available
-        fetch(`http://localhost:5000/api/progress/get?userEmail=${encodeURIComponent(userData.email)}&courseName=${encodeURIComponent(courseName)}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-          .then(res => {
-            if (!res.ok) throw new Error("Failed to fetch progress");
-            return res.json();
-          })
-          .then(data => {
-            const progress = data.progress;
-            if (progress && progress.lastAccessedModule) {
-              // Redirect to the last accessed module (lesson or quiz page)
-              setTimeout(() => {
-                navigate(`/${progress.lastAccessedModule}`);
-              }, 100);
-            } else {
-              // Default to dashboard
-              setTimeout(() => {
-                navigate(userData.role === 'admin' ? '/admindashboard' : '/userdashboard');
-              }, 100);
+        // Fetch level progress for all users
+        try {
+          const progressRes = await fetch(`http://localhost:5000/api/progress/${userData.email}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
             }
-          })
-          .catch(err => {
-            console.error("Error fetching progress:", err);
-            setTimeout(() => {
-              navigate(userData.role === 'admin' ? '/admindashboard' : '/userdashboard');
-            }, 100);
           });
+          
+          if (progressRes.ok) {
+            const progressData = await progressRes.json();
+            // Use new progress structure if available, fallback to old structure
+            const levelCount = progressData.data?.currentLevel || progressData.levelCount || 0;
+            localStorage.setItem("levelCleared", levelCount);
+          } else {
+            console.warn("Progress fetch returned non-OK status:", progressRes.status);
+            localStorage.setItem("levelCleared", 0);
+          }
+        } catch (err) {
+          console.warn("Could not fetch initial progress, setting default:", err.message);
+          localStorage.setItem("levelCleared", 0);
+        }
 
+        // Handle navigation based on user role
         const userRole = userData.role || res.data.role;
-        setTimeout(() => {
-          navigate(userRole === 'admin' ? '/admindashboard' : '/');
-        }, 100);
+        
+        if (userRole === 'admin') {
+          // Admin always goes to admin dashboard
+          setTimeout(() => {
+            navigate('/admindashboard');
+          }, 100);
+        } else {
+          // For employees, always redirect to landing page
+          setTimeout(() => {
+            navigate('/');
+          }, 100);
+        }
       }
 
     } catch (err) {
