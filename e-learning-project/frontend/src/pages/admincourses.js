@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Sidebar from './sidebar';
-import { Plus, Edit, Trash2, Eye, Video, Search, Filter, PlayCircle, ChevronDown, ChevronUp, X, Save } from "lucide-react";
+import Sidebar from './sidebar';import axios from "axios";
+
+import { Plus, Edit, Trash2, Eye, Video, Search, Filter, PlayCircle, ChevronDown, ChevronUp, X, Save, Clock, CheckCircle, Upload } from "lucide-react";
 
 const CourseAdminDashboard = () => {
   const [courses, setCourses] = useState([]);
@@ -86,6 +87,15 @@ const CourseAdminDashboard = () => {
     fetchCourses();
   }, []);
 
+  // Debug: Monitor form data changes
+  useEffect(() => {
+    console.log("🔍 Form data changed:", {
+      modulesCount: formData.modules?.length || 0,
+      pendingUploads: formData.modules?.filter(m => m.video?.pendingUpload).length || 0,
+      modules: formData.modules
+    });
+  }, [formData.modules]);
+
   const resetForm = () => {
     setFormData({
       name: '',
@@ -137,77 +147,127 @@ const CourseAdminDashboard = () => {
     resetForm();
   };
   
-  const handleSave = async () => {
-    if (!formData.name || !formData.description) {
-      setError('Please fill in all required fields');
-      return;
-    }
-    if (formData.modules.length === 0) {
-      setError('Please add at least one module to the course');
-      return;
-    }
+const handleSave = async () => {
+  if (!formData.name || !formData.description) {
+    setError("Please fill in all required fields");
+    return;
+  }
 
-    const courseData = {
-      name: formData.name,
-      description: formData.description,
-      category: formData.category || 'General',
-      duration: formData.duration || 'TBD',
-      status: formData.status || 'Draft',
-      modules: formData.modules.map(module => ({
-        _id: module._id,
-        title: module.title,
-        video: module.video || null,
-        quiz: {
-          questions: module.quiz.questions.map(q => ({
-            question: q.question,
-            type: q.type,
-            options: q.options,
-            correctAnswer: q.correctAnswer,
-            points: q.points
-          })),
-          passingScore: module.quiz.passingScore
-        }
-      })),
-      createdDate: formData.createdDate || '2025-07-03',
-      enrollments: formData.enrollments || 0
+  const courseData = {
+    name: formData.name,
+    description: formData.description,
+    category: formData.category || "General",
+    duration: formData.duration || "TBD",
+    status: formData.status || "Draft",
+    modules: (formData.modules || []).map((module) => ({
+      title: module.title,
+      quiz: {
+        questions: (module.quiz?.questions || []).map((q) => ({
+          question: q.question,
+          type: q.type,
+          options: q.options,
+          correctAnswer: q.correctAnswer,
+          points: q.points,
+        })),
+        passingScore: module.quiz?.passingScore || 0,
+      },
+    })),
+    createdDate: formData.createdDate || "2025-07-03",
+    enrollments: formData.enrollments || 0,
+  };
+
+  setIsLoading(true);
+  try {
+    let response, savedCourse;
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("authToken")}`,
     };
 
-    setIsLoading(true);
-    try {
-      let response;
-      const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-      };
+         console.log("🔍 Course data being saved:", courseData);
+     console.log("🔍 Current form data:", formData);
+     console.log("🔍 Editing course:", editingCourse);
 
-      if (editingCourse) {
-        response = await fetch(`${API_BASE_URL}/api/admin/courses/${editingCourse._id}`, {
-          method: 'PUT',
-          headers,
-          body: JSON.stringify(courseData)
-        });
-      } else {
-        response = await fetch(`${API_BASE_URL}/api/admin/courses`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(courseData)
-        });
-      }
+     if (editingCourse) {
+       // ✅ Update existing course
+       console.log("📝 Updating existing course:", editingCourse.name, "→", formData.name);
+       response = await fetch(
+         `${API_BASE_URL}/api/admin/courses/${editingCourse._id}`,
+         { method: "PUT", headers, body: JSON.stringify(courseData) }
+       );
+       if (!response.ok) throw new Error("Failed to update course");
+       savedCourse = { _id: editingCourse._id }; // reuse existing course ID
+       console.log("✅ Course updated successfully");
+     } else {
+       // ✅ Create new course
+       console.log("📝 Creating new course:", formData.name);
+       response = await fetch(`${API_BASE_URL}/api/admin/courses`, {
+         method: "POST",
+         headers,
+         body: JSON.stringify(courseData),
+       });
+       if (!response.ok) throw new Error("Failed to create course");
+       savedCourse = await response.json(); // get new ID
+       console.log("✅ Course created successfully");
+     }
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Failed to save course: ${errorData.message || 'Unknown error'}`);
-      }
+    console.log("✅ Course saved successfully!", savedCourse);
 
-      // Instead of updating state locally, re-fetch all courses for consistency
-      await fetchCourses();
-      closeModal();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+         // --- Upload videos if pending ---
+     for (let i = 0; i < formData.modules.length; i++) {
+       const module = formData.modules[i];
+       if (module.video?.file && module.video?.pendingUpload) {
+         console.log(`📤 Uploading video for module ${i + 1}: ${module.title}`);
+
+         const formDataToSend = new FormData();
+         formDataToSend.append("video", module.video.file);
+
+         // Use course name instead of ID for consistent S3 folder structure
+         if (!formData.name || formData.name.trim() === '') {
+           console.error('❌ Course name is empty or undefined');
+           alert('Course name is required for video upload');
+           continue; // Skip this module
+         }
+         
+         const courseName = formData.name.replace(/\s+/g, '_');
+         const moduleNumber = i + 1;
+
+         console.log(`📤 Course details:`, {
+           originalName: formData.name,
+           sanitizedName: courseName,
+           moduleNumber: moduleNumber,
+           moduleTitle: module.title
+         });
+         console.log(`📤 Uploading to: ${courseName}/Module${moduleNumber}`);
+
+         const res = await axios.post(
+           `${API_BASE_URL}/api/videos/upload-video/${courseName}/${moduleNumber}`,
+           formDataToSend,
+           {
+             headers: {
+               "Content-Type": "multipart/form-data",
+               Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+             },
+             timeout: 30000,
+           }
+         );
+
+         if (res.data.success) {
+           console.log(`✅ Video uploaded for module ${i + 1} to ${courseName}/Module${moduleNumber}`);
+         }
+       }
+     }
+
+    alert("Course and videos saved successfully! 🎉");
+    closeModal();
+
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   const handleDelete = async (courseId) => {
     if (window.confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
@@ -248,9 +308,14 @@ const CourseAdminDashboard = () => {
       return;
     }
 
+    // Simple: just add module locally
     const newModule = {
       ...currentModule,
       id: `mod${formData.modules.length + 1}`,
+      video: {
+        ...currentModule.video,
+        pendingUpload: true // Mark for later upload
+      },
       quiz: {
         ...currentModule.quiz,
         questions: [...currentModule.quiz.questions]
@@ -271,6 +336,8 @@ const CourseAdminDashboard = () => {
         passingScore: 70
       }
     });
+
+    console.log("✅ Module added locally - ready for video upload");
   };
 
   const removeModule = (moduleIndex) => {
@@ -280,20 +347,209 @@ const CourseAdminDashboard = () => {
     });
   };
 
-  const handleVideoUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const videoData = {
-        name: file.name,
-        size: (file.size / (1024 * 1024)).toFixed(2) + ' MB',
-        type: file.type,
-      };
-      setCurrentModule({
-        ...currentModule,
-        video: videoData
-      });
+  // Test backend connection
+  const testBackendConnection = async () => {
+    console.log('🔍 Testing backend connection...');
+    
+    try {
+      // Test basic connectivity
+      const response = await axios.get(`${API_BASE_URL}/api/videos/health`, { timeout: 5000 });
+      console.log('✅ Backend health check successful:', response.data);
+      alert('Backend is accessible! ✅\n\nVideo upload service is running.');
+    } catch (error) {
+      console.error('❌ Backend connection failed:', error);
+      
+      if (error.response?.status === 404) {
+        alert('Backend is running but health endpoint not found.\n\nThis might mean:\n1. Backend server needs restart\n2. Route not properly registered\n\nTry restarting your backend server.');
+      } else if (error.response?.status === 500) {
+        alert('Backend server error (500).\n\nThis usually means:\n1. AWS credentials are missing\n2. Environment variables not set\n3. Server configuration error\n\nCheck your backend console for errors.');
+      } else if (error.code === 'ECONNREFUSED') {
+        alert('Backend server is not running.\n\nPlease start your backend server first.');
+      } else {
+        alert(`Backend connection failed: ${error.message}\n\nStatus: ${error.response?.status || 'Unknown'}`);
+      }
     }
   };
+
+  // Simple video upload function
+  const handleUploadPendingVideos = async () => {
+    if (!formData.name) {
+      alert('Please enter a course name first');
+      return;
+    }
+
+    if (!formData.modules || formData.modules.length === 0) {
+      alert('Please add at least one module with video');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      console.log('📤 Starting simple video upload...');
+      
+      // Upload each module video to AWS S3
+      for (let i = 0; i < formData.modules.length; i++) {
+        const module = formData.modules[i];
+        if (module.video && module.video.file) {
+          console.log(`📤 Uploading video for module ${i + 1}: ${module.title}`);
+          
+          const formDataToSend = new FormData();
+          formDataToSend.append("video", module.video.file);
+          
+          // Use course name and module number for S3 path
+          const courseName = formData.name.replace(/\s+/g, '_');
+          const moduleNumber = i + 1;
+          
+          const res = await axios.post(
+            `${API_BASE_URL}/api/videos/upload-video/${courseName}/${moduleNumber}`,
+            formDataToSend,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              },
+              timeout: 30000,
+            }
+          );
+
+          if (res.data.success) {
+            console.log(`✅ Video uploaded for module ${moduleNumber}: ${module.title}`);
+            
+            // Update module with S3 video data
+            const updatedModules = [...formData.modules];
+            updatedModules[i].video = {
+              ...updatedModules[i].video,
+              url: res.data.video.url,
+              s3Key: res.data.video.s3Key,
+              uploadedAt: res.data.video.uploadedAt,
+              pendingUpload: false
+            };
+            
+            setFormData({ ...formData, modules: updatedModules });
+          }
+        }
+      }
+      
+      alert('All videos uploaded successfully to AWS S3! 🎉');
+      closeModal();
+      
+    } catch (error) {
+      console.error('Failed to upload videos:', error);
+      
+      if (error.response?.status === 500) {
+        alert('Server error (500). Check if AWS credentials are configured in backend.');
+      } else {
+        alert(`Video upload failed: ${error.message}`);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Simple video upload function - no complex logic needed
+
+  
+ const handleVideoUpload = async (e, moduleIndex) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  // Validate file type
+  if (!file.type.startsWith("video/")) {
+    alert("Please select a valid video file");
+    return;
+  }
+
+  // Validate file size (500MB limit)
+  if (file.size > 500 * 1024 * 1024) {
+    alert("Video file size must be less than 500MB");
+    return;
+  }
+
+  try {
+    // ✅ Handle "new module" case
+    if (moduleIndex === "new") {
+      setCurrentModule({
+        ...currentModule,
+        video: {
+          file,
+          name: file.name,
+          size: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+          type: file.type,
+        },
+      });
+      return;
+    }
+
+    // ✅ Step 1: Ensure course is saved and has a real ID
+    let courseId = editingCourse?._id || formData._id; 
+    if (!courseId) {
+      console.log("Saving new course before uploading video...");
+      const saveRes = await axios.post(
+        `${API_BASE_URL}/api/admin/courses`,
+        formData,
+        { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
+      );
+
+      // Update state with saved course
+      courseId = saveRes.data._id;
+      setFormData(saveRes.data);
+
+      console.log("Course saved, new ID:", courseId);
+    }
+
+    // ✅ Step 2: Ensure moduleId exists
+    let moduleId = formData.modules[moduleIndex]?._id || formData.modules[moduleIndex]?.id;
+    if (!moduleId) {
+      moduleId = `temp_${Date.now()}_${moduleIndex}`;
+    }
+
+    // ✅ Step 3: Upload video to backend
+    const formDataToSend = new FormData();
+    formDataToSend.append("video", file);
+
+    const res = await axios.post(
+      `${API_BASE_URL}/api/videos/upload-video/${courseId}/${moduleId}`,
+      formDataToSend,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      }
+    );
+
+    // ✅ Step 4: Update module with video metadata
+    if (res.data.success) {
+      const updatedModules = [...formData.modules];
+      updatedModules[moduleIndex].video = {
+        url: res.data.videoUrl, // matches backend after we fix response
+        name: file.name,
+        size: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+        type: file.type,
+        s3Key: res.data.s3Key,
+        uploadedAt: res.data.uploadDate,
+      };
+
+      setFormData({ ...formData, modules: updatedModules });
+
+      console.log("✅ Video uploaded successfully for module", moduleId);
+    }
+  } catch (error) {
+    if (error.response) {
+      console.error("Video upload failed:", error.response.data);
+      alert("Upload failed: " + (error.response.data.error || "Server error"));
+    } else if (error.request) {
+      console.error("No response received:", error.request);
+      alert("Upload failed: No response from server");
+    } else {
+      console.error("Error setting up request:", error.message);
+      alert("Upload failed: " + error.message);
+    }
+  }
+};
+
+
+  
 
   const addQuestionToModule = () => {
     if (!currentQuestion.question) {
@@ -454,7 +710,7 @@ const CourseAdminDashboard = () => {
                     <div className="text-xs text-gray-500 mb-2">Modules:</div>
                     <div className="space-y-1 max-h-20 overflow-y-auto">
                       {(course.modules || []).map((module, index) => (
-                        <div key={module.id} className="flex items-center text-xs text-gray-600 bg-gray-50 p-2 rounded">
+                        <div key={module._id || module.id || index} className="flex items-center text-xs text-gray-600 bg-gray-50 p-2 rounded">
                           <PlayCircle className="w-3 h-3 mr-2 text-blue-500" />
                           <span className="flex-1 truncate">{module.title}</span>
                           <span className="text-gray-400">{module.quiz?.questions?.length || 0}Q</span>
@@ -606,67 +862,47 @@ const CourseAdminDashboard = () => {
                           <h3 className="text-lg font-semibold text-gray-900 mb-4">
                             Course Modules ({formData.modules.length}/5)
                           </h3>
-                          <div className="space-y-4">
-                            {formData.modules.map((module, index) => (
-                              <div key={module.id} className="bg-gray-50 rounded-lg p-4">
-                                <div className="flex justify-between items-center">
-                                  <div className="flex items-center space-x-3">
-                                    <div className="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium">
-                                      {index + 1}
-                                    </div>
-                                    <div>
-                                      <h4 className="font-medium text-gray-900">{module.title}</h4>
-                                      <p className="text-sm text-gray-600">
-                                        Video: {module.video?.name} • Quiz: {module.quiz.questions.length || module.quiz.questions} questions
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center space-x-2">
-                                    <button
-                                      onClick={() => toggleModuleExpansion(index)}
-                                      className="text-gray-400 hover:text-gray-600"
-                                      disabled={isLoading}
-                                    >
-                                      {expandedModules[index] ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                                    </button>
-                                    <button
-                                      onClick={() => removeModule(index)}
-                                      className="text-red-600 hover:text-red-800"
-                                      disabled={isLoading}
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </button>
-                                  </div>
-                                </div>
-                                
-                                {expandedModules[index] && (
-                                  <div className="mt-4 pt-4 border-t border-gray-200">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                      <div>
-                                        <h5 className="font-medium text-gray-900 mb-2">Video Content</h5>
-                                        <div className="bg-white p-3 rounded border">
-                                          <div className="flex items-center">
-                                            <Video className="w-4 h-4 text-blue-600 mr-2" />
-                                            <span className="text-sm">{module.video?.name}</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div>
-                                        <h5 className="font-medium text-gray-900 mb-2">Quiz Questions</h5>
-                                        <div className="bg-white p-3 rounded border">
-                                          <div className="text-sm text-gray-600">
-                                            {module.quiz.questions.length || module.quiz.questions} questions • {module.quiz.passingScore}% to pass
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
+                         
+                         <div className="space-y-4">
+  {formData.modules.map((module, index) => (
+    <div key={module.id || index} className="border rounded-lg p-4 bg-gray-50">
+      <div className="flex justify-between items-center">
+        <h4 className="font-medium text-gray-900">{module.title}</h4>
+        <button
+          onClick={() => removeModule(index)}
+          className="text-red-600 hover:text-red-800"
+          disabled={isLoading}
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div className="mt-2 text-sm text-gray-600">
+        {module.quiz.questions.length} questions • {module.quiz.passingScore}% to pass
+        {module.video && (
+          <div className="mt-1">
+            {module.video.pendingUpload ? (
+              <span className="text-orange-600 flex items-center">
+                <Clock className="w-3 h-3 mr-1" />
+                Video pending upload
+              </span>
+            ) : (
+              <span className="text-green-600 flex items-center">
+                <CheckCircle className="w-3 h-3 mr-1" />
+                Video uploaded
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  ))}
+</div>
+
+
                           </div>
-                        </div>
                       )}
+
 
                       {formData.modules.length < 5 && (
                         <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
@@ -692,12 +928,13 @@ const CourseAdminDashboard = () => {
                               <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
                                 <input
                                   type="file"
-                                  ref={ref => videoInputRefs.current.module = ref}
-                                  onChange={handleVideoUpload}
+                                  ref={ref => (videoInputRefs.current.newModule = ref)}
+                                  onChange={(e) => handleVideoUpload(e, 'new')}
                                   accept="video/*"
                                   className="hidden"
                                   disabled={isLoading}
                                 />
+
                                 {currentModule.video ? (
                                   <div className="flex items-center justify-between bg-blue-50 p-3 rounded">
                                     <div className="flex items-center">
@@ -721,7 +958,7 @@ const CourseAdminDashboard = () => {
                                     <div className="mt-2">
                                       <button
                                         type="button"
-                                        onClick={() => videoInputRefs.current.module?.click()}
+                                        onClick={() => videoInputRefs.current.newModule?.click()}
                                         className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm"
                                         disabled={isLoading}
                                       >
@@ -907,14 +1144,52 @@ const CourseAdminDashboard = () => {
                               </div>
                             </div>
 
-                            <button
-                              onClick={addModule}
-                              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
-                              disabled={isLoading}
-                            >
-                              <Plus className="w-4 h-4" />
-                              <span>Add Module</span>
-                            </button>
+                            <div className="space-y-3">
+                              <button
+                                onClick={addModule}
+                                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+                                disabled={isLoading}
+                              >
+                                <Plus className="w-4 h-4" />
+                                <span>Add Module</span>
+                              </button>
+                              
+                              {/* Debug info - remove this later */}
+                              <div className="text-xs text-gray-500 mb-2">
+                                Debug: {formData.modules?.length || 0} modules, 
+                                {formData.modules?.filter(m => m.video?.pendingUpload).length || 0} pending uploads
+                                <br />
+                                Modules: {formData.modules?.map(m => `${m.title} (${m.video?.pendingUpload ? 'pending' : 'uploaded'})`).join(', ') || 'none'}
+                              </div>
+                              
+                              {/* Simple instruction message */}
+                              {formData.modules?.some(m => m.video?.pendingUpload) && (
+                                <div className="text-sm text-blue-600 bg-blue-50 p-3 rounded-lg border border-blue-200 mb-4">
+                                  <div className="flex items-center">
+                                    <Video className="w-4 h-4 mr-2" />
+                                    <span className="font-medium">Ready to Upload Videos!</span>
+                                  </div>
+                                  <p className="mt-1 text-blue-700">
+                                    Add your course name and modules, then click "Upload Videos to AWS S3" to store them in the cloud.
+                                  </p>
+                                </div>
+                              )}
+                              
+                              {formData.modules && formData.modules.some(m => m.video?.pendingUpload) && (
+                                <div className="text-sm text-orange-600 bg-orange-50 p-3 rounded-lg border border-orange-200">
+                                  <div className="flex items-center">
+                                    <Clock className="w-4 h-4 mr-2" />
+                                    <span className="font-medium">Videos Pending Upload</span>
+                                  </div>
+                                  <p className="mt-1 text-orange-700">
+                                    Some modules have videos that need to be uploaded to AWS S3.
+                                  </p>
+                                  <div className="space-y-2">
+                                    
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       )}
@@ -929,20 +1204,21 @@ const CourseAdminDashboard = () => {
                     >
                       Cancel
                     </button>
-                    <button
-                      onClick={handleSave}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <span>Saving...</span>
-                      ) : (
-                        <>
-                          <Save className="w-4 h-4" />
-                          <span>Save Course</span>
-                        </>
-                      )}
-                    </button>
+                   <button
+  onClick={handleSave}
+  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+  disabled={isLoading}
+>
+  {isLoading ? (
+    <span>Saving...</span>
+  ) : (
+    <>
+      <Save className="w-4 h-4" />
+      <span>Save Course</span>
+    </>
+  )}
+</button>
+
                   </div>
                 </div>
               </div>

@@ -91,6 +91,8 @@ mongoose.connect(process.env.MONGO_URI, {
     error: err.message
   });
 });
+const videoUploadRoutes = require('./routes/VideoUpload');
+app.use('/api/videos', videoUploadRoutes);
 
 // Routes Setup
 app.use('/api/auth', authRoutes);

@@ -905,7 +905,104 @@ const courseData = {
       ]
     }
   }
+},
+"68885cf5d486bba2975cdca9": {
+  "name": "VRU",
+  "description": "Training on identifying and annotating Vulnerable Road Users (pedestrians) in various scenarios with proper bounding box techniques and attribute labeling.",
+  "level": "Intermediate",
+  "backgroundImage": "https://images.unsplash.com/photo-1508898578281-774ac4893c0d?w=400&h=200&fit=crop",
+  "lessons": {
+    "VRU01": {
+      "m_id": "VRU01",
+      "_id": "68789a19935761547602b501",
+      "title": "Definition & Exclusions",
+      "duration": 25,
+      "description": "Learn what qualifies as a pedestrian, and the specific cases that should be excluded from labeling.",
+      "videoUrl": "https://intern-vista-work-space.s3.eu-north-1.amazonaws.com/e-learning/VRU_Module_1.mp4",
+      "content": [
+        "Definition of Pedestrian:",
+        "",
+        "A pedestrian is any person who is walking, running, standing, or otherwise on foot in the scene.",
+        "This includes people crossing streets, walking along sidewalks, or standing in open areas.",
+        "",
+        "Exclusions:",
+        "Do not label individuals inside vehicles (drivers, passengers).",
+        "Do not label reflections of people in mirrors or windows.",
+        "Do not label people fully visible in posters, billboards, or digital displays.",
+        "",
+        "Special Note:",
+        "People partially inside a vehicle but with significant body parts outside should be labeled only if their position is relevant to scene context.",
+        "Do not label mannequins or non-living human-shaped objects."
+      ]
+    },
+    "VRU02": {
+      "m_id": "VRU02",
+      "_id": "68789a19935761547602b502",
+      "title": "Bounding Box Rules",
+      "duration": 30,
+      "description": "Understand how to draw accurate bounding boxes for pedestrians, including occlusion and perspective handling.",
+      "videoUrl": "https://intern-vista-work-space.s3.eu-north-1.amazonaws.com/e-learning/VRU_Module_2.mp4",
+      "content": [
+        "Bounding Box Guidelines:",
+        "",
+        "Draw the box from the top of the head (including hats or helmets) to the bottom of the feet.",
+        "Include carried items such as backpacks if they are closely attached to the person.",
+        "Exclude objects that are not directly attached (e.g., trolleys, bicycles).",
+        "",
+        "Multiple People in Close Proximity:",
+        "Draw separate bounding boxes for each visible individual, even if partially occluded.",
+        "For people carrying children, the child must be labeled separately as a pedestrian.",
+        "",
+        "Perspective Considerations:",
+        "When people are partially outside the frame, draw the bounding box to the visible extent.",
+        "Boxes should align tightly without cutting off visible body parts."
+      ]
+    },
+    "VRU03": {
+      "m_id": "VRU03",
+      "_id": "68789a19935761547602b503",
+      "title": "Special Cases & Linking",
+      "duration": 20,
+      "description": "Learn how to handle unusual labeling cases and link pedestrians to other objects when necessary.",
+      "videoUrl": "https://intern-vista-work-space.s3.eu-north-1.amazonaws.com/e-learning/VRU_Module_3.mp4",
+      "content": [
+        "Labeling Billboards & Statues:",
+        "",
+        "Do not label people in posters, billboards, or statues — use 'isIgnoreArea' instead.",
+        "",
+        "Linking to Other Objects:",
+        "Use 'isAttachedTo' when a pedestrian is physically connected to another labeled object (e.g., holding a labeled bicycle, pushing a stroller).",
+        "",
+        "Labeling on Stairs or Elevated Surfaces:",
+        "Ensure bounding boxes follow the same head-to-foot rule even if the person is on stairs or elevated areas.",
+        "Adjust box position to match the person’s standing level, not the ground floor."
+      ]
+    },
+    "VRU04": {
+      "m_id": "VRU04",
+      "_id": "68789a19935761547602b504",
+      "title": "Properties & Attributes",
+      "duration": 35,
+      "description": "Identify and annotate pedestrian attributes including duty, group behavior, age, clothing, and posture.",
+      "videoUrl": "https://intern-vista-work-space.s3.eu-north-1.amazonaws.com/e-learning/VRU_Module_4.mp4",
+      "content": [
+        "Pedestrian Attributes:",
+        "",
+        "Duty - Mark if the person is working (e.g., traffic police, construction worker).",
+        "isDummy - Mark for mannequins or artificial figures.",
+        "Occlusion - Indicate percentage of the pedestrian that is hidden.",
+        "isGroup - Mark if the pedestrian is part of a group walking together.",
+        "",
+        "Additional Attributes:",
+        "Age - Classify as Child, Adult, or Senior.",
+        "Clothing - Indicate if wearing uniforms, reflective vests, or protective gear.",
+        "Accessories - Label visible items like umbrellas, shopping bags, hats.",
+        "Posture - Standing, walking, running, sitting, lying down."
+      ]
+    }
+  }
 }
+
 
 
 };
