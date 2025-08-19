@@ -368,7 +368,8 @@ const TaskDetailPage = () => {
                         onClick={() => navigate('/taskmodulepage', {
                           state: {
                             courseDetails: courseDetails,
-                            selectedModule: module
+                            selectedModule: module,
+                            taskDetails: task
                           }
                         })}
                       >
@@ -437,7 +438,8 @@ const TaskDetailPage = () => {
                   onClick={() => navigate('/taskmodulepage', {
                     state: {
                       courseDetails: courseDetails,
-                      selectedModule: courseDetails.modules[0]
+                      selectedModule: courseDetails.modules[0],
+                      taskDetails: task
                     }
                   })}
                 >
