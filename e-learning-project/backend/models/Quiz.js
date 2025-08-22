@@ -56,13 +56,16 @@ const quizSchema = new mongoose.Schema({
       },
       options: [String],
       correctAnswer: { type: mongoose.Schema.Types.Mixed, required: true },
-      points: { type: Number, default: 1 }
+      points: { type: Number, default: 1 },
+      imageUrl: { type: String, default: null }  // ✅ new field added
     }
   ],
   passingScore: { type: Number, default: 70 },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
+
+
 
 // Validate that mo_id exists in the course's modules
 quizSchema.pre('save', async function (next) {
